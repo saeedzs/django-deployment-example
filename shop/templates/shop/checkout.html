@@ -1,0 +1,196 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Order Summary Column -->
+        <div class="col-lg-5 order-lg-2 mb-4">
+            <div class="card shadow-sm border-0 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="font-weight-bold text-dark mb-0">Your Cart Summary</h4>
+                    <span class="badge badge-primary badge-pill px-2 py-2" id="cart-badge">0</span>
+                </div>
+                
+                <ul class="list-group list-group-flush mb-3" id="item-list">
+                    <!-- Populated dynamically via JS -->
+                </ul>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <h5 class="text-dark font-weight-bold mb-0">Total Amount</h5>
+                    <h4 class="text-success font-weight-bold mb-0" id="total-display">$0.00</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping & Order Form Column -->
+        <div class="col-lg-7 order-lg-1">
+            <div class="card shadow-sm border-0 p-4">
+                <h4 class="mb-4 text-dark font-weight-bold">Shipping Address</h4>
+                <form method="POST" id="checkoutForm">
+                    {% csrf_token %}
+
+                    <!-- Hidden Fields -->
+                    {{ form.items }}
+                    {{ form.total_price }}
+
+                    <!-- Form Fields -->
+                    <div class="form-group">
+                        <label class="text-muted font-weight-bold">Full Name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="text-muted font-weight-bold">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="text-muted font-weight-bold">Phone Number</label>
+                        {{ form.phone_num }}
+                        {% if form.phone_num.errors %}<div class="text-danger small mt-1">{{ form.phone_num.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="text-muted font-weight-bold">Street Address</label>
+                        {{ form.address }}
+                        {% if form.address.errors %}<div class="text-danger small mt-1">{{ form.address.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label class="text-muted font-weight-bold">City</label>
+                            {{ form.city }}
+                            {% if form.city.errors %}<div class="text-danger small mt-1">{{ form.city.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label class="text-muted font-weight-bold">State</label>
+                            {{ form.state }}
+                            {% if form.state.errors %}<div class="text-danger small mt-1">{{ form.state.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label class="text-muted font-weight-bold">Zip</label>
+                            {{ form.zip_code }}
+                            {% if form.zip_code.errors %}<div class="text-danger small mt-1">{{ form.zip_code.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-add-cart btn-block py-3 mt-4 font-weight-bold shadow-sm" id="placeOrderBtn">
+                        Place Order
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function getCart() {
+        return localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : {};
+    }
+
+    function saveCart(cart) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+        if (typeof updateCartCount === 'function') updateCartCount(cart);
+        if (typeof DisplayCart === 'function') DisplayCart(cart);
+    }
+
+    function renderCheckout() {
+        var cart = getCart();
+        var total = 0;
+        var itemCount = 0;
+        var itemList = $('#item-list');
+        itemList.empty();
+
+        if (Object.keys(cart).length === 0) {
+            itemList.append('<li class="list-group-item text-center text-muted py-4 border-0">Your cart is empty.</li>');
+            $('#total-display').text('$0.00');
+            $('#cart-badge').text('0');
+            $('#items').val('{}');
+            $('#total_price').val('0.00');
+            $('#placeOrderBtn').prop('disabled', true);
+            return;
+        }
+
+        $('#placeOrderBtn').prop('disabled', false);
+
+        for (var itemKey in cart) {
+            var qty = cart[itemKey][0];
+            var name = cart[itemKey][1];
+            var price = parseFloat(cart[itemKey][2]);
+            var itemTotal = qty * price;
+
+            total += itemTotal;
+            itemCount += qty;
+
+            var itemHtml = `
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                    <div class="pr-2" style="max-width: 55%;">
+                        <span class="font-weight-bold text-dark d-block mb-1">${name}</span>
+                        <small class="text-muted">$${price.toFixed(2)} each</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="btn-group btn-group-sm mr-2" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-minus mr-1" data-id="${itemKey}">-</button>
+                            <button type="button" class="btn btn-light font-weight-bold text-dark px-1" disabled style="opacity: 1;">${qty}</button>
+                            <button type="button" class="btn btn-outline-secondary btn-plus" data-id="${itemKey}">+</button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove" data-id="${itemKey}" title="Remove item">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </li>
+            `;
+            itemList.append(itemHtml);
+        }
+
+        $('#cart-badge').text(itemCount);
+        $('#total-display').text('$' + total.toFixed(2));
+        $('#items').val(JSON.stringify(cart));
+        $('#total_price').val(total.toFixed(2));
+    }
+
+    // Plus quantity button
+    $(document).on('click', '.btn-plus', function() {
+        var id = $(this).data('id');
+        var cart = getCart();
+        if (cart[id]) {
+            cart[id][0] += 1;
+            saveCart(cart);
+            renderCheckout();
+        }
+    });
+
+    // Minus quantity button
+    $(document).on('click', '.btn-minus', function() {
+        var id = $(this).data('id');
+        var cart = getCart();
+        if (cart[id]) {
+            cart[id][0] -= 1;
+            if (cart[id][0] <= 0) {
+                delete cart[id];
+            }
+            saveCart(cart);
+            renderCheckout();
+        }
+    });
+
+    // Delete item button
+    $(document).on('click', '.btn-remove', function() {
+        var id = $(this).data('id');
+        var cart = getCart();
+        if (cart[id]) {
+            delete cart[id];
+            saveCart(cart);
+            renderCheckout();
+        }
+    });
+
+    // Initial render on page load
+    $(document).ready(function() {
+        renderCheckout();
+    });
+</script>
+
+{% endblock %}

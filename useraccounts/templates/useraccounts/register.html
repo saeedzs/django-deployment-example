@@ -1,0 +1,25 @@
+{% extends 'shop/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content%}
+
+<div class="container mt-5" style="max-width: 400px;">
+  <div class="card shadow-sm p-4">
+    <h2 class="mb-4 text-center">Register</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary w-100">Register</button>
+    </form>
+
+   
+    <div class="text-center mt-3">
+      <a href="{% url 'useraccounts:login' %}" class="text-decoration-none">
+        Already have an account? Click here     
+     </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

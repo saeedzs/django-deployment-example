@@ -1,0 +1,33 @@
+{% extends 'shop/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="container mt-5" style="max-width: 400px;">
+  <div class="card shadow-sm p-4">
+    <h2 class="mb-4 text-center">Log In</h2>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button type="submit" class="btn btn-primary w-100 mt-3">Log In</button>
+    </form>
+
+    <div class="text-center mt-3"> Forgot Password?
+      <a href="{% url 'useraccounts:password_reset' %}" class="text-decoration-none">
+        Click here to reset
+      </a>
+    </div>
+        <div class="text-center mt-3">Don't have an account?
+      <a href="{% url 'useraccounts:register' %}" class="text-decoration-none">
+         <u>Click here</u>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+{% endblock %}

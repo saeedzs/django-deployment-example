@@ -1,0 +1,265 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{% static 'shop/index.css' %}">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>All Products</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <nav class="navbar navbar-expand-lg navbar-light custom-navbar mb-4">
+                    <!-- Brand Logo -->
+                    <img src="{% static 'shop/images/logo.jpg.jpg' %}" alt="Logo" class="logo mr-2 rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                    <a class="navbar-brand text-primary font-weight-bold" href="{% url 'shop:index' %}">
+                        ShopSpace
+                    </a>
+                    
+                    <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav mr-auto">
+                            <li class="nav-item active">
+                                <a class="nav-link px-3" href="{% url 'shop:index' %}">Home</a>
+                            </li>
+                            
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle px-3" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Categories
+                                </a>
+                                <div class="dropdown-menu border-0 shadow-sm" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="{% url 'shop:category_view' 'electronics' %}">Electronics</a>
+                                    <a class="dropdown-item" href="{% url 'shop:category_view' 'clothing' %}">Clothing</a>
+                                    <a class="dropdown-item" href="{% url 'shop:category_view' 'sports' %}">Sports</a>
+
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#">Special Offers</a>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <!-- Right Section: Account, Cart & Search -->
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <ul class="navbar-nav align-items-center mr-2">
+                                {% if user.is_authenticated %}
+                                    <li class="nav-item d-flex align-items-center">
+                                        <a class="nav-link text-dark p-0 mr-1" href="{% url 'useraccounts:profile' %}" title="View Profile">
+                                            <i class="fas fa-user"></i>
+                                        </a>
+                                        <span class="navbar-text text-dark font-weight-bold ml-1 mr-2 small">
+                                            Hello, {{ user.username }}
+                                        </span>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="btn btn-outline-danger btn-sm mx-1" href="{% url 'useraccounts:logout' %}">Logout</a>
+                                    </li>
+                                {% else %}
+                                    <li class="nav-item">
+                                        <a class="btn btn-outline-primary btn-sm mx-1 px-3 font-weight-bold" href="{% url 'useraccounts:login' %}">Login</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="btn btn-primary btn-sm mx-1 px-3 font-weight-bold" href="{% url 'useraccounts:register' %}">Register</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+
+                            <!-- Cart Button -->
+                            <div class="mr-2">
+                                <button id="cart" data-html="true" type="button" class="btn btn-primary cart-btn shadow-sm" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Your cart is empty">
+                                    <i class="fas fa-shopping-cart mr-1"></i>Cart (0)
+                                </button>  
+                            </div>
+
+                            <!-- Expandable Search Bar -->
+                            <div>
+                                <form action="{% url 'shop:index' %}" method="GET" class="mb-0">
+                                    <div class="search-bar-container active">
+                                        <i class="fas fa-search magnifier text-secondary"></i>
+                                        <input 
+                                            type="text" 
+                                            name="item_name" 
+                                            class="input" 
+                                            placeholder="Search products..." 
+                                            value="{{ request.GET.item_name|default:'' }}"
+                                        >
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </nav>
+            </div>
+        </div>
+        {% block content %}
+        {% endblock %}
+    </div> <!-- Closes main container -->
+
+    <!-- FOOTER -->
+    <footer class="site-footer mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="footer-heading">About ShopSpace</h5>
+                    <p class="footer-text">
+                        Welcome to ShopSpace! We are dedicated to providing the best quality products with fast shipping and 24/7 customer support.
+                    </p>
+                    <div class="social-icons mt-3">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="footer-heading">Quick Links</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="{% url 'shop:index' %}">Home</a></li>
+                        <li><a href="#">Featured Products</a></li>
+                        <li><a href="{% url 'shop:checkout' %}">Checkout</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-4 col-md-12">
+                    <h5 class="footer-heading">Contact Us</h5>
+                    <ul class="list-unstyled footer-contact">
+                        <li><i class="fas fa-map-marker-alt mr-2 text-primary"></i>123 Commerce St, Suite 100, New York, NY</li>
+                        <li><i class="fas fa-phone-alt mr-2 text-primary"></i>+1 (555) 019-2834</li>
+                        <li><i class="fas fa-envelope mr-2 text-primary"></i>support@shopspace.com</li>
+                        <li><i class="fas fa-clock mr-2 text-primary"></i>Mon - Fri: 9:00 AM - 6:00 PM</li>
+                        <li><a href="{% url 'shop:contactus' %}"><i class="fas fa-paper-plane mr-2"></i>Send Message</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="footer-divider my-4">
+            <div class="row align-items-center">
+                <div class="col-md-12 text-center">
+                    <p class="copyright-text mb-0">&copy; 2026 ShopSpace. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="text/javascript">
+        if(localStorage.getItem('cart') == null){
+            var cart = {};
+        } else { 
+            cart = JSON.parse(localStorage.getItem('cart'));
+        }
+
+        updateCartCount(cart);
+
+        $(document).on('click','.atc',function(){
+            var item_id = this.id.toString();
+            var item_name = $(this).data('name') || document.getElementById("nm"+item_id).innerHTML;
+            var item_price = parseFloat($(this).data('price')); 
+
+            if (cart[item_id] != undefined) {
+                cart[item_id][0] = cart[item_id][0] + 1;
+            } else {
+                cart[item_id] = [1, item_name, item_price];
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount(cart);
+            DisplayCart(cart); 
+        });
+
+        DisplayCart(cart);
+
+        function updateCartCount(cart) {
+            document.getElementById('cart').innerHTML = 
+                '<i class="fas fa-shopping-cart"></i> Cart <span class="cart-count">' + Object.keys(cart).length + '</span>';
+        }
+
+        function DisplayCart(cart){
+            var cartString = "";
+            
+            if (Object.keys(cart).length === 0) {
+                cartString = "<div class='text-center p-2'><i class=\"fas fa-shopping-cart mb-2\" style=\"font-size:1.4rem;color:#E4E6EF;\"></i><div class='text-muted small'>Your cart is empty.</div></div>";
+            } else {
+                cartString = "<h6 class='font-weight-bold mb-2'>Your Cart</h6>";
+                for(var x in cart){
+                    var itemName = cart[x][1]; 
+                    var qty = cart[x][0];
+                    cartString += "<div class='small mb-1 d-flex justify-content-between'><span>" + itemName + "</span><strong>&times;" + qty + "</strong></div>";
+                }
+                cartString += "<a href='/checkout' class='btn btn-primary btn-sm btn-block mt-3' id='checkout'>Checkout</a>";
+            }
+
+            $('#cart').popover('dispose');
+            document.getElementById("cart").setAttribute('data-content', cartString);
+            $('#cart').popover({ html: true });
+        }
+
+        /* Search Bar Controller */
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchBarContainerEl = document.querySelector(".search-bar-container");
+            const magnifierEl = document.querySelector(".magnifier");
+            const inputEl = document.querySelector(".input");
+            
+            if (searchBarContainerEl && magnifierEl && inputEl) {
+                const formEl = searchBarContainerEl.closest("form");
+
+                // Toggle or submit on magnifier click
+                magnifierEl.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (searchBarContainerEl.classList.contains("active")) {
+                        searchBarContainerEl.classList.remove("active");
+                        inputEl.focus();
+                    } else {
+                        if (inputEl.value.trim() !== "") {
+                            formEl.submit();
+                        } else {
+                            searchBarContainerEl.classList.add("active");
+                        }
+                    }
+                });
+
+                // Prevent click inside search bar from closing it
+                searchBarContainerEl.addEventListener("click", function(e) {
+                    e.stopPropagation();
+                });
+
+                // Collapse search bar when user clicks anywhere outside
+                document.addEventListener("click", function () {
+                    if (!searchBarContainerEl.classList.contains("active") && inputEl.value.trim() === "") {
+                        searchBarContainerEl.classList.add("active");
+                    }
+                });
+
+                // Submit on Enter key
+                inputEl.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        if (inputEl.value.trim() !== "") {
+                            formEl.submit();
+                        } else {
+                            e.preventDefault();
+                            searchBarContainerEl.classList.add("active");
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

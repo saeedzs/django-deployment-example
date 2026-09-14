@@ -1,0 +1,42 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="font-weight-bold">Get In Touch</h1>
+        <p class="text-muted">Have a question or feedback? Send us a message and we will respond promptly.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-7 mb-4">
+            <div class="card p-4">
+                {% if success_msg %}
+                    <div class="alert alert-success border-0 shadow-sm mb-4">
+                        <i class="fas fa-check-circle mr-2"></i> {{ success_msg }}
+                    </div>
+                {% endif %}
+
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    {% for field in contactform %}
+                        <div class="form-group">
+                            <label class="text-muted font-weight-bold">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary btn-block py-2 mt-4 font-weight-bold">
+                        <i class="fas fa-paper-plane mr-2"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

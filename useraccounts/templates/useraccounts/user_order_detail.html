@@ -1,0 +1,38 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 700px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Order #{{ order.id }}</h3>
+        <a href="{% url 'useraccounts:profile' %}" class="btn btn-outline-secondary btn-sm">&larr; Back to Profile</a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h5 class="card-title font-weight-bold mb-3">Order Status</h5>
+            <p class="mb-1"><strong>Status:</strong> <span class="badge badge-info">{{ order.status }}</span></p>
+            <p class="mb-1"><strong>Date Placed:</strong> {{ order.created_at|date:"F d, Y - H:i" }}</p>
+            <p class="mb-0"><strong>Total Paid:</strong> ${{ order.total_price }}</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="card-title font-weight-bold mb-3">Items Ordered</h5>
+            <ul class="list-group list-group-flush">
+                {% for item, details in items_data.items %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <h6 class="mb-0">{{ details.1|default:item }}</h6>
+                            <small class="text-muted">Quantity: {{ details.0 }}</small>
+                        </div>
+                        <span class="text-muted">${{ details.2 }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item px-0 text-muted">No item details available.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "shop/base.html" %}
+{% block content %}
+<div class="container my-5" style="max-width: 400px;">
+    <h3 class="text-center font-weight-bold mb-4">Staff Login</h3>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'shop/base.html' %}
+{% block content %}
+{% if messages %}
+    <div class="container my-5">
+        <h2 class="mb-4">Contact Messages</h2>
+        <div class="list-group">
+            {% for message in messages %}
+                <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 shadow-sm">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ message.name }}</h5>
+                        <small class="text-muted">{{ message.created_at|date:"F d, Y \a\t H:i" }}</small>
+                    </div>
+                    <p class="mb-1"><strong>Email:</strong> {{ message.email }}</p>
+                    <p class="mb-1"><strong>Subject:</strong> {{ message.subject }}</p>
+                    <p class="mb-1"><strong>Message:</strong> {{ message.message }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <div class="container my-5">
+        <h2 class="text-center text-muted">No messages to display.</h2>
+    </div>
+{% endif %}
+{% endblock %}

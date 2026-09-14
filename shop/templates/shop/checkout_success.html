@@ -1,0 +1,51 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 600px;">
+    <!-- Order Confirmation Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body text-center">
+            <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+            <h2 class="card-title font-weight-bold">Thank You for Your Order!</h2>
+            <p class="text-muted">Order #{{ order.id }} has been placed successfully.</p>
+            <hr>
+            <p class="mb-1"><strong>Shipping to:</strong> {{ order.name }}</p>
+            <p class="mb-1"><strong>Address:</strong> {{ order.address }}, {{ order.city }}</p>
+            <p class="mb-0"><strong>Total Paid:</strong> ${{ order.total_price }}</p>
+        </div>
+    </div>
+
+    <!-- Post-Purchase Registration Prompt for Guest Users -->
+    {% if not user.is_authenticated and not order.user %}
+    <div class="card border-primary shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title font-weight-bold text-primary">
+                <i class="fas fa-user-plus me-2"></i>Save Your Information for Next Time
+            </h5>
+            <p class="card-text text-muted small">
+                Create a password to turn your order into an account. You will be able to track shipment status and check out faster next time using <strong>{{ order.email }}</strong>.
+            </p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group mb-2">
+                    {{ form.password }}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.confirm_password }}
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    Create Account & Link Order
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script type="text/javascript">
+    // Clear cart in browser storage after successful checkout
+    localStorage.removeItem('cart');
+</script>
+
+{% endblock %}

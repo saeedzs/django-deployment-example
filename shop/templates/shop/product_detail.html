@@ -1,0 +1,87 @@
+{% extends "shop/base.html" %}
+{% block content %}
+
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Product Image Section -->
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="card product-detail-media border-0">
+                <div class="card-body text-center p-4">
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid" style="max-height: 400px; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Details Section -->
+        <div class="col-md-6">
+            <div class="pl-md-3">
+                <!-- Product Title -->
+                <h1 class="display-5 font-weight-bold mb-2" id="nm{{ product.id }}">{{ product.title }}</h1>
+                
+                <!-- Price Section -->
+                <div class="price-tag" style="font-size: 1.6rem;">
+                    ${{ product.price }}
+                </div>
+                
+                <hr class="my-4">
+                
+                <!-- Description Section -->
+                <h5 class="text-muted">Description</h5>
+                <p class="lead text-secondary mb-4">
+                    {{ product.description }}
+                </p>
+                
+                <hr class="my-4">
+                
+                <!-- Action Buttons -->
+                <div class="d-flex align-items-center gap-2">
+                    <button id="{{ product.id }}" 
+                            data-name="{{ product.title }}" 
+                            data-price="{{ product.price }}" 
+                            class="btn-add-cart atc py-2 px-4">
+                        <i class="fas fa-shopping-bag mr-2"></i>Add to cart
+                    </button>
+                    <a href="{% url 'shop:index' %}" class="btn btn-outline-secondary py-2 px-4">
+                        <i class="fas fa-arrow-left mr-1"></i> Back to Shop
+                    </a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'shop:edit_product' product.id %}" class="btn btn-outline-secondary py-2 px-4">
+                            <i class="fas fa-edit me-1"></i> Edit Product
+                        </a>
+                        <!-- Delete Trigger Button -->
+                        <button type="button" class="btn btn-danger py-2 px-4" data-toggle="modal" data-target="#deleteModal">
+                            <i class="fas fa-trash-alt me-1"></i> Delete Product
+                        </button>
+
+                        <!-- Bootstrap 4 Confirmation Modal -->
+                        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body text-dark">
+                                Are you sure you want to delete <strong>{{ product.title }}</strong>? This action cannot be undone.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <form method="POST" action="{% url 'shop:delete_product' product.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Yes, Delete Item</button>
+                                </form>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
