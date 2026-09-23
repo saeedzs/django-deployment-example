@@ -172,17 +172,25 @@
             var item_name = $(this).data('name') || document.getElementById("nm"+item_id).innerHTML;
             var item_price = parseFloat($(this).data('price')); 
 
+            // Check if a quantity input exists for this specific item ID
+            var qty_input = document.getElementById('qty' + item_id);
+            var qty_to_add = qty_input ? parseInt(qty_input.value) : 1;
+
+            // Ensure the value is valid
+            if (isNaN(qty_to_add) || qty_to_add < 1) {
+                qty_to_add = 1; 
+            }
+
             if (cart[item_id] != undefined) {
-                cart[item_id][0] = cart[item_id][0] + 1;
+                cart[item_id][0] = cart[item_id][0] + qty_to_add;
             } else {
-                cart[item_id] = [1, item_name, item_price];
+                cart[item_id] = [qty_to_add, item_name, item_price];
             }
             
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount(cart);
             DisplayCart(cart); 
         });
-
         DisplayCart(cart);
 
         function updateCartCount(cart) {

@@ -25,6 +25,12 @@
                 </div>
                 
                 <hr class="my-4">
+
+                <!-- Quantity Selector -->
+                <div class="d-flex align-items-center mb-4">
+                    <label for="qty{{ product.id }}" class="mr-3 mb-0 font-weight-bold text-muted">Quantity:</label>
+                    <input type="number" id="qty{{ product.id }}" class="form-control text-center shadow-sm" value="1" min="1" style="width: 80px;">
+                </div>
                 
                 <!-- Description Section -->
                 <h5 class="text-muted">Description</h5>
