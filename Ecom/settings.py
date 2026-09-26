@@ -42,6 +42,10 @@ render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if render_hostname:
     ALLOWED_HOSTS.append(render_hostname)
 
+if render_hostname:
+    CSRF_TRUSTED_ORIGINS = [f"https://{render_hostname}"]
+    
+
 # Application definition
 
 INSTALLED_APPS = [
