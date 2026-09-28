@@ -21,3 +21,5 @@ staticfiles/
 .vscode/
 
 data.json
+
+.env.neon
