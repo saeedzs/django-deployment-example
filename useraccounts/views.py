@@ -52,3 +52,20 @@ def user_order_detail(request, order_id):
         'order': order,
         'items_data': items_data,
     })
+    
+import ast
+import json
+
+def parse_order_items(raw_items):
+    """Safely decodes both valid JSON strings and Python literal dicts/lists."""
+    if not raw_items:
+        return {}
+    if isinstance(raw_items, (dict, list)):
+        return raw_items
+    try:
+        return json.loads(raw_items)
+    except (json.JSONDecodeError, TypeError):
+        try:
+            return ast.literal_eval(raw_items)
+        except (ValueError, SyntaxError):
+            return {}

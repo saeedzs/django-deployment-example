@@ -1,93 +1,196 @@
 {% extends "shop/base.html" %}
+
+{% block title %}{{ product.title }} — ShopSpace{% endblock %}
+
 {% block content %}
+<div class="product-detail-page pb-5">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 small align-items-center mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'shop:index' %}" class="text-muted text-decoration-none"><i class="fas fa-house mr-1"></i>Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'shop:category_view' product.category|lower %}" class="text-muted text-decoration-none">{{ product.category|title }}</a></li>
+            <li class="breadcrumb-item active text-dark font-weight-semibold text-truncate" style="max-width: 280px;" aria-current="page">{{ product.title }}</li>
+        </ol>
+    </nav>
 
+    <!-- Staff Administrative Action Bar -->
+    {% if user.is_staff %}
+    <div class="alert alert-secondary d-flex justify-content-between align-items-center rounded-lg border-0 shadow-sm py-2 px-3 mb-4">
+        <span class="small font-weight-bold text-muted">
+            <i class="fas fa-shield-halved mr-1 text-primary"></i> Staff Admin Mode
+        </span>
+        <div class="d-flex gap-2">
+            <a href="{% url 'shop:edit_product' product.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                <i class="fas fa-pen-to-square mr-1"></i> Edit Product
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" data-toggle="modal" data-target="#deleteProductModal">
+                <i class="fas fa-trash-can mr-1"></i> Delete
+            </button>
+        </div>
+    </div>
 
-<div class="container my-5">
-    <div class="row">
-        <!-- Product Image Section -->
-        <div class="col-md-6 mb-4 mb-md-0">
-            <div class="card product-detail-media border-0">
-                <div class="card-body text-center p-4">
-                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid" style="max-height: 400px; object-fit: contain;">
+    <!-- Staff Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteProductModal" tabindex="-1" role="dialog" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-md);">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title font-weight-bold" id="deleteProductModalLabel">Delete Product</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-muted">
+                    Are you sure you want to permanently remove <strong>"{{ product.title }}"</strong> from the catalog? This action cannot be undone.
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                    <form action="{% url 'shop:delete_product' product.id %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 font-weight-bold">Confirm Delete</button>
+                    </form>
                 </div>
             </div>
         </div>
-        
-        <!-- Product Details Section -->
-        <div class="col-md-6">
-            <div class="pl-md-3">
-                <!-- Product Title -->
-                <h1 class="display-5 font-weight-bold mb-2" id="nm{{ product.id }}">{{ product.title }}</h1>
-                
-                <!-- Price Section -->
-                <div class="price-tag" style="font-size: 1.6rem;">
-                    ${{ product.price }}
-                </div>
-                
-                <hr class="my-4">
+    </div>
+    {% endif %}
 
-                <!-- Quantity Selector -->
-                <div class="d-flex align-items-center mb-4">
-                    <label for="qty{{ product.id }}" class="mr-3 mb-0 font-weight-bold text-muted">Quantity:</label>
-                    <input type="number" id="qty{{ product.id }}" class="form-control text-center shadow-sm" value="1" min="1" style="width: 80px;">
-                </div>
-                
-                <!-- Description Section -->
-                <h5 class="text-muted">Description</h5>
-                <p class="lead text-secondary mb-4">
-                    {{ product.description }}
-                </p>
-                
-                <hr class="my-4">
-                
-                <!-- Action Buttons -->
-                <div class="d-flex align-items-center gap-2">
-                    <button id="{{ product.id }}" 
-                            data-name="{{ product.title }}" 
-                            data-price="{{ product.price }}" 
-                            class="btn-add-cart atc py-2 px-4">
-                        <i class="fas fa-shopping-bag mr-2"></i>Add to cart
-                    </button>
-                    <a href="{% url 'shop:index' %}" class="btn btn-outline-secondary py-2 px-4">
-                        <i class="fas fa-arrow-left mr-1"></i> Back to Shop
-                    </a>
-                    {% if user.is_staff %}
-                        <a href="{% url 'shop:edit_product' product.id %}" class="btn btn-outline-secondary py-2 px-4">
-                            <i class="fas fa-edit me-1"></i> Edit Product
-                        </a>
-                        <!-- Delete Trigger Button -->
-                        <button type="button" class="btn btn-danger py-2 px-4" data-toggle="modal" data-target="#deleteModal">
-                            <i class="fas fa-trash-alt me-1"></i> Delete Product
-                        </button>
-
-                        <!-- Bootstrap 4 Confirmation Modal -->
-                        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                            <div class="modal-header bg-danger text-white">
-                                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
-                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body text-dark">
-                                Are you sure you want to delete <strong>{{ product.title }}</strong>? This action cannot be undone.
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                <form method="POST" action="{% url 'shop:delete_product' product.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger">Yes, Delete Item</button>
-                                </form>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
+    <div class="row g-5">
+        <!-- Left Column: Product Media Showcase -->
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="card border-0 shadow-sm product-detail-frame p-4 text-center position-relative">
+                <!-- Sale / Category Badges -->
+                <div class="position-absolute" style="top: 16px; left: 16px; z-index: 2;">
+                    {% if product.dis_price and product.dis_price > product.price %}
+                        <span class="badge-sale">Sale</span>
                     {% endif %}
                 </div>
+
+                <div class="product-gallery-stage d-flex align-items-center justify-content-center">
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="img-fluid product-detail-img" id="mainProductImage">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Product Overview, Purchasing & Specs -->
+        <div class="col-lg-6">
+            <div class="product-info-wrap pl-lg-3">
+                <div class="text-uppercase small font-weight-bold tracking-wide text-primary mb-2">
+                    {{ product.category }}
+                </div>
+                
+                <h1 id="nm{{ product.id }}" class="product-title font-weight-bold mb-3">
+                    {{ product.title }}
+                </h1>
+
+                <!-- Price Presentation -->
+                <div class="d-flex align-items-baseline mb-4">
+                    <span class="product-price-current h2 font-weight-bold text-dark mb-0">${{ product.price|floatformat:2 }}</span>
+                    {% if product.dis_price and product.dis_price > product.price %}
+                        <span class="product-price-original text-muted ml-3 text-decoration-line-through">${{ product.dis_price|floatformat:2 }}</span>
+                        <span class="badge badge-success ml-2 py-1 px-2 font-weight-bold">
+                            Save ${{ product.dis_price|add:product.price|floatformat:2 }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                <hr class="border-subtle my-4">
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <h6 class="font-weight-bold text-dark mb-2">About this item</h6>
+                    <p class="text-muted leading-relaxed" style="white-space: pre-line;">{{ product.description }}</p>
+                </div>
+
+                <hr class="border-subtle my-4">
+
+                <!-- Quantity Selector & Cart Interaction -->
+                <div class="order-controls mb-4">
+                    <label for="qty{{ product.id }}" class="font-weight-bold small text-muted text-uppercase mb-2 d-block">Quantity</label>
+                    <div class="d-flex align-items-center flex-wrap gap-3">
+                        <div class="quantity-stepper d-inline-flex align-items-center bg-light rounded-pill p-1 border">
+                            <button type="button" class="btn btn-qty-step" id="qty-decrement" aria-label="Decrease quantity">
+                                <i class="fas fa-minus fa-xs"></i>
+                            </button>
+                            <input 
+                                type="number" 
+                                id="qty{{ product.id }}" 
+                                name="quantity" 
+                                value="1" 
+                                min="1" 
+                                max="99" 
+                                class="form-control text-center border-0 bg-transparent qty-field p-0 mx-2"
+                                readonly
+                            >
+                            <button type="button" class="btn btn-qty-step" id="qty-increment" aria-label="Increase quantity">
+                                <i class="fas fa-plus fa-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- Add to Cart (Triggers cart script in base.html) -->
+                        <button 
+                            id="{{ product.id }}" 
+                            data-name="{{ product.title }}" 
+                            data-price="{{ product.price }}" 
+                            class="btn btn-primary btn-add-cart-detail atc px-4 py-2 font-weight-bold rounded-pill shadow-sm flex-grow-1"
+                        >
+                            <i class="fas fa-bag-shopping mr-2"></i> Add to Bag
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Trust Badges & Guarantee Grid -->
+                <div class="trust-features-grid p-3 rounded-lg bg-light border mt-4">
+                    <div class="row text-center text-md-left">
+                        <div class="col-sm-4 mb-2 mb-sm-0 d-flex align-items-center">
+                            <i class="fas fa-truck-fast text-primary fa-lg mr-2"></i>
+                            <div class="small leading-tight">
+                                <strong>Free Delivery</strong>
+                                <span class="d-block text-muted">Orders over $50</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 mb-2 mb-sm-0 d-flex align-items-center">
+                            <i class="fas fa-rotate-left text-primary fa-lg mr-2"></i>
+                            <div class="small leading-tight">
+                                <strong>30 Days</strong>
+                                <span class="d-block text-muted">Hassle-free return</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 d-flex align-items-center">
+                            <i class="fas fa-shield-check text-primary fa-lg mr-2"></i>
+                            <div class="small leading-tight">
+                                <strong>Secure</strong>
+                                <span class="d-block text-muted">Verified payment</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const qtyInput = document.getElementById("qty{{ product.id }}");
+    const decrementBtn = document.getElementById("qty-decrement");
+    const incrementBtn = document.getElementById("qty-increment");
+
+    if (qtyInput && decrementBtn && incrementBtn) {
+        decrementBtn.addEventListener("click", function () {
+            let current = parseInt(qtyInput.value) || 1;
+            if (current > 1) {
+                qtyInput.value = current - 1;
+            }
+        });
+
+        incrementBtn.addEventListener("click", function () {
+            let current = parseInt(qtyInput.value) || 1;
+            if (current < 99) {
+                qtyInput.value = current + 1;
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -1,99 +1,167 @@
 {% extends "shop/base.html" %}
 
+{% block title %}ShopSpace — Next-Gen Marketplace{% endblock %}
+
 {% block content %}
 
-{% comment %} <div class="row justify-content-center my-4">
-    <div class="col-md-8"> 
-        <form method="GET" action="{% url 'shop:index' %}" class="modern-search-form">
-            <div class="input-group shadow-sm">
-                <div class="input-group-prepend">
-                    <span class="input-group-text bg-white border-0 pl-3">
-                        <i class="fas fa-search text-muted"></i>
-                    </span>
-                </div>
-                <input type="search" name="item_name" placeholder="Search for products..." class="form-control border-0 py-2" value="{{ request.GET.item_name|default:'' }}">
-                <div class="input-group-append">
-                    <button type="submit" class="btn btn-primary px-4 font-weight-bold">Search</button>
-                </div>
-            </div>
-        </form>  
+<!-- HERO BANNER SECTION (Midnight Navy & Warm Accents) -->
+<!-- MINIMALIST HERO BANNER -->
+<section class="hero-banner-simple text-center py-5 mb-4 position-relative">
+    <div class="container py-3">
+        <span class="hero-mini-tag mb-2 d-inline-block">2026 Collection</span>
+        <h1 class="hero-title font-weight-bold mb-3">
+            Quality Essentials, Everyday Prices.
+        </h1>
+        <p class="hero-lead text-muted mx-auto mb-4">
+            Curated gear, tech, and everyday apparel delivered straight to your door.
+        </p>
+        <div class="d-flex justify-content-center align-items-center gap-2">
+            <a href="#product-catalog" class="btn btn-atc px-4 py-2 font-weight-bold text-decoration-none">
+                <i class="fas fa-bag-shopping mr-2"></i> Browse Products
+            </a>
+        </div>
     </div>
+</section>
+
+<!-- QUICK CATEGORY JUMP RIBBON -->
+{% comment %} <div class="category-ribbon mb-4 p-2 bg-white rounded-lg shadow-sm border d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center flex-wrap gap-2">
+        <span class="text-muted small font-weight-bold px-2 text-uppercase tracking-wider">Browse:</span>
+        <a href="{% url 'shop:index' %}" class="category-pill {% if not category_name %}active{% endif %}">All Items</a>
+        <a href="{% url 'shop:category_view' 'electronics' %}" class="category-pill {% if category_name == 'electronics' %}active{% endif %}">
+            <i class="fas fa-laptop-code mr-1"></i> Electronics
+        </a>
+        <a href="{% url 'shop:category_view' 'clothing' %}" class="category-pill {% if category_name == 'clothing' %}active{% endif %}">
+            <i class="fas fa-shirt mr-1"></i> Clothing
+        </a>
+        <a href="{% url 'shop:category_view' 'sports' %}" class="category-pill {% if category_name == 'sports' %}active{% endif %}">
+            <i class="fas fa-volleyball mr-1"></i> Sports
+        </a>
+    </div>
+
+    {% if request.GET.item_name %}
+        <div class="search-active-badge">
+            <span class="badge badge-light p-2 border">
+                Results for: <strong>"{{ request.GET.item_name }}"</strong>
+                <a href="{% url 'shop:index' %}" class="text-danger ml-2 text-decoration-none">&times; Reset</a>
+            </span>
+        </div>
+    {% endif %}
 </div> {% endcomment %}
 
+<!-- SECTION HEADER -->
+<div id="product-catalog" class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+        <h3 class="section-title mb-1 font-weight-bold">Product Catalog</h3>
+        <p class="text-muted small mb-0">Browse through our current inventory with live stock status.</p>
+    </div>
+</div>
 
-
-<div class="row">
+<!-- PRODUCT GRID -->
+<div class="row g-4">
     {% for product in products_obj %}
-    <div class="col-md-3">
-        <div class="card h-100 shadow-sm border-0">
-            <!-- Clickable Image Wrap -->
-            <a href="{% url 'shop:product_detail' product.id %}">
-                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.title }}">
+    <div class="col-xl-3 col-lg-4 col-sm-6 mb-4">
+        <div class="card h-100 product-card border-0">
+            <!-- Badges -->
+            <div class="product-badge-group">
+                <span class="badge-category">{{ product.category|title }}</span>
+                {% if product.dis_price and product.dis_price > product.price %}
+                    <span class="badge-sale">Sale</span>
+                {% endif %}
+            </div>
+
+            <!-- Product Media Frame -->
+            <a href="{% url 'shop:product_detail' product.id %}" class="product-media-link">
+                <div class="product-image-frame">
+                    <img src="{{ product.image.url }}" class="product-img" alt="{{ product.title }}" loading="lazy">
+                </div>
             </a>
-            <div class="card-body d-flex flex-column">
-                <div id="nm{{ product.id }}" class="card-title">{{ product.title }}</div>
-                <p class="card-text text-muted flex-grow-1">{{ product.description }}</p>
-                <div class="product-price mb-3">${{ product.price|floatformat:2 }}</div>
-                
-                <!-- Modernized Action Interface -->
-                <div class="product-actions d-flex flex-column gap-2 mt-auto">
-                    <button id="{{ product.id }}" 
+
+            <!-- Card Body -->
+            <div class="card-body d-flex flex-column p-3">
+                <a href="{% url 'shop:product_detail' product.id %}" class="text-decoration-none">
+                    <h5 id="nm{{ product.id }}" class="product-heading text-truncate" title="{{ product.title }}">
+                        {{ product.title }}
+                    </h5>
+                </a>
+
+                <p class="product-excerpt text-muted mb-3 flex-grow-1">
+                    {{ product.description|truncatewords:14 }}
+                </p>
+
+                <!-- Pricing Display -->
+                <div class="product-pricing d-flex align-items-baseline mb-3">
+                    <span class="current-price">${{ product.price|floatformat:2 }}</span>
+                    {% if product.dis_price and product.dis_price > product.price %}
+                        <span class="original-price ml-2">${{ product.dis_price|floatformat:2 }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="product-action-row d-flex align-items-center gap-2">
+                    <button 
+                        id="{{ product.id }}" 
                         data-name="{{ product.title }}" 
                         data-price="{{ product.price }}" 
-                        class="btn btn-add-cart atc w-100 py-2 d-flex align-items-center justify-content-center">
-                        <i class="fas fa-shopping-bag mr-2"></i> Add to Cart
+                        class="btn btn-atc atc flex-grow-1"
+                        type="button"
+                    >
+                        <i class="fas fa-cart-plus mr-1"></i> Add
                     </button>
-                    <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-view-details w-100 py-2 text-center">
-                        View Details <i class="fas fa-arrow-right ml-1"></i>
+                    <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-inspect" title="Quick View">
+                        <i class="fas fa-arrow-up-right-from-square"></i>
                     </a>
                 </div>
             </div>
         </div>
     </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="empty-state-box py-5">
+            <i class="fas fa-boxes-packing fa-3x text-muted mb-3"></i>
+            <h4>No products found</h4>
+            <p class="text-muted">Try adjusting your search criteria or explore other categories.</p>
+            <a href="{% url 'shop:index' %}" class="btn btn-checkout-primary rounded-pill px-4 mt-2">View All Items</a>
+        </div>
+    </div>
     {% endfor %}
 </div>
 
-<!-- Pagination Navigation -->
-        <ul class="pagination justify-content-center my-4">
-            <!-- Previous Page Arrow -->
-            {% if products_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-item btn btn-primary mx-1" href="?page={{ products_obj.previous_page_number }}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}" aria-label="Previous">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <span class="page-item btn btn-outline-secondary mx-1 disabled">
-                        <i class="fas fa-chevron-left"></i>
-                    </span>
-                </li>
-            {% endif %}
-
-            <!-- Current Page Indicator -->
-            <li class="page-item active">
-                <span class="page-item btn btn-primary mx-1">
-                    {{ products_obj.number }}
-                </span>
+<!-- PAGINATION -->
+{% if products_obj.has_other_pages %}
+<nav aria-label="Product navigation" class="mt-4 mb-5">
+    <ul class="pagination pagination-modern justify-content-center">
+        {% if products_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ products_obj.previous_page_number }}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}" aria-label="Previous">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
             </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-left"></i></span></li>
+        {% endif %}
 
-            <!-- Next Page Arrow -->
-            {% if products_obj.has_next %}
+        {% for num in products_obj.paginator.page_range %}
+            {% if products_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > products_obj.number|add:'-3' and num < products_obj.number|add:'3' %}
                 <li class="page-item">
-                    <a class="page-item btn btn-primary mx-1" href="?page={{ products_obj.next_page_number }}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}" aria-label="Next">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <span class="page-item btn btn-outline-secondary mx-1 disabled">
-                        <i class="fas fa-chevron-right"></i>
-                    </span>
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">{{ num }}</a>
                 </li>
             {% endif %}
-        </ul>
-    </div> <!-- Closes column/row wrap -->
+        {% endfor %}
 
+        {% if products_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ products_obj.next_page_number }}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}" aria-label="Next">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link"><i class="fas fa-chevron-right"></i></span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 
-    
-{% endblock %}    
+{% endblock %}

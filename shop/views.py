@@ -3,7 +3,7 @@ from .models import MyProduct,Order,ContactMessage
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from .forms import ContactForm,OrderForm,ProductForm
+from .forms import ContactForm,OrderForm,ProductForm,OrderShippingForm
 import json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login, logout, get_user_model
@@ -159,33 +159,49 @@ def order_list(request):
     
 @staff_member_required
 def order_detail(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    
-    # Process Status Change POST Request
+    order = get_object_or_404(Order, id=order_id)  #[cite: 12]
+    shipping_form = OrderShippingForm(instance=order)
+
+    # Process Form Submissions
     if request.method == "POST":
-        new_status = request.POST.get("status")
-        if new_status in dict(Order.STATUS_CHOICES):
-            order.status = new_status
-            order.save()
-            messages.success(request, f"Order #{order.id} status updated to '{new_status}'.")
-            return redirect('shop:order_detail', order_id=order.id)
+        action = request.POST.get("action")
+
+        # 1. Update Order Status
+        if action == "update_status":
+            new_status = request.POST.get("status")  #[cite: 12]
+            if new_status in dict(Order.STATUS_CHOICES):  #[cite: 12]
+                order.status = new_status  #[cite: 12]
+                order.save()  #[cite: 12]
+                messages.success(request, f"Order #{order.id} status updated to '{new_status}'.")  #[cite: 12]
+                return redirect('shop:order_detail', order_id=order.id)  #[cite: 12]
+
+        # 2. Update Customer & Shipping Information
+        elif action == "update_shipping":
+            shipping_form = OrderShippingForm(request.POST, instance=order)
+            if shipping_form.is_valid():
+                shipping_form.save()
+                messages.success(request, f"Shipping and customer details for Order #{order.id} updated successfully.")
+                return redirect('shop:order_detail', order_id=order.id)
+            else:
+                messages.error(request, "Failed to update shipping details. Please correct the form errors.")
 
     # Parse items JSON safely
-    items_data = {}
-    if isinstance(order.items, str):
+    items_data = {}  #[cite: 12]
+    if isinstance(order.items, str):  #[cite: 12]
         try:
-            items_data = json.loads(order.items)
-        except json.JSONDecodeError:
-            items_data = {}
+            items_data = json.loads(order.items)  #[cite: 12]
+        except json.JSONDecodeError:  #[cite: 12]
+            items_data = {}  #[cite: 12]
     else:
-        items_data = order.items
+        items_data = order.items  #[cite: 12]
 
     return render(request, 'shop/order_detail.html', {
-        'order': order, 
-        'items_data': items_data,
-        'status_choices': Order.STATUS_CHOICES,
+        'order': order,  #[cite: 12]
+        'items_data': items_data,  #[cite: 12]
+        'status_choices': Order.STATUS_CHOICES,  #[cite: 12]
+        'shipping_form': shipping_form,
     })
-    
+        
 @staff_member_required
 def read_message(request):
     messages = ContactMessage.objects.all().order_by('-created_at')  # Fetch all messages, most recent first
@@ -251,7 +267,22 @@ def delete_product(request,product_id):
         return redirect('shop:index')
     return redirect('shop:product_detail', id=product.id)
 
+import ast
+import json
 
+def parse_order_items(raw_items):
+    """Safely decodes both valid JSON strings and Python literal dicts/lists."""
+    if not raw_items:
+        return {}
+    if isinstance(raw_items, (dict, list)):
+        return raw_items
+    try:
+        return json.loads(raw_items)
+    except (json.JSONDecodeError, TypeError):
+        try:
+            return ast.literal_eval(raw_items)
+        except (ValueError, SyntaxError):
+            return {}
 
 # # Public API: List all products or create a new product (Admin/Staff only)
 # class ProductListCreateAPIView(ListCreateAPIView):

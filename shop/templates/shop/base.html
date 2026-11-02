@@ -1,272 +1,262 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ShopSpace — Curated Marketplace{% endblock %}</title>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 4.6 & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom Theme Stylesheet -->
     <link rel="stylesheet" href="{% static 'shop/index.css' %}">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <title>All Products</title>
 </head>
-<body>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <nav class="navbar navbar-expand-lg navbar-light custom-navbar mb-4">
-                    <!-- Brand Logo -->
-                    <img src="{% static 'shop/images/logo.jpg.jpg' %}" alt="Logo" class="logo mr-2 rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
-                    <a class="navbar-brand text-primary font-weight-bold" href="{% url 'shop:index' %}">
-                        ShopSpace
-                    </a>
-                    
-                    <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
+<body class="bg-canvas">
 
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav mr-auto">
-                            <li class="nav-item active">
-                                <a class="nav-link px-3" href="{% url 'shop:index' %}">Home</a>
-                            </li>
-                            
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle px-3" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Categories
-                                </a>
-                                <div class="dropdown-menu border-0 shadow-sm" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{% url 'shop:category_view' 'electronics' %}">Electronics</a>
-                                    <a class="dropdown-item" href="{% url 'shop:category_view' 'clothing' %}">Clothing</a>
-                                    <a class="dropdown-item" href="{% url 'shop:category_view' 'sports' %}">Sports</a>
+    <!-- Sticky Glassmorphic Navbar -->
+    <header class="sticky-top py-3 header-nav-wrapper">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-glass">
+                <a class="navbar-brand d-flex align-items-center" href="{% url 'shop:index' %}">
+                    <span class="brand-badge mr-2">
+                        <img src="{% static 'shop/images/shopping-bag.png' %}" alt="ShopSpace Logo">
+                    </span>
+                    <span class="brand-text">ShopSpace</span>
+                </a>
 
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#">Special Offers</a>
-                                </div>
-                            </li>
-                        </ul>
+                <button class="navbar-toggler border-0 p-2" type="button" data-toggle="collapse" data-target="#navContent" aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars-staggered text-dark"></i>
+                </button>
 
-                        <!-- Right Section: Account, Cart & Search -->
-                        <div class="d-flex align-items-center flex-wrap gap-2">
-                            <ul class="navbar-nav align-items-center mr-2">
-                                {% if user.is_authenticated %}
-                                    <li class="nav-item d-flex align-items-center">
-                                        <a class="nav-link text-dark p-0 mr-1" href="{% url 'useraccounts:profile' %}" title="View Profile">
-                                            <i class="fas fa-user"></i>
-                                        </a>
-                                        <span class="navbar-text text-dark font-weight-bold ml-1 mr-2 small">
-                                            Hello, {{ user.username }}
-                                        </span>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="btn btn-outline-danger btn-sm mx-1" href="{% url 'useraccounts:logout' %}">Logout</a>
-                                    </li>
-                                {% else %}
-                                    <li class="nav-item">
-                                        <a class="btn btn-outline-primary btn-sm mx-1 px-3 font-weight-bold" href="{% url 'useraccounts:login' %}">Login</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="btn btn-primary btn-sm mx-1 px-3 font-weight-bold" href="{% url 'useraccounts:register' %}">Register</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-
-                            <!-- Cart Button -->
-                            <div class="mr-2">
-                                <button id="cart" data-html="true" type="button" class="btn btn-primary cart-btn shadow-sm" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Your cart is empty">
-                                    <i class="fas fa-shopping-cart mr-1"></i>Cart (0)
-                                </button>  
+                <div class="collapse navbar-collapse" id="navContent">
+                    <!-- Categories & Primary Links -->
+                    <ul class="navbar-nav mr-auto align-items-lg-center">
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="{% url 'shop:index' %}">Catalog</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="categoriesDrop" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Categories
+                            </a>
+                            <div class="dropdown-menu glass-dropdown border-0 shadow-lg" aria-labelledby="categoriesDrop">
+                                <a class="dropdown-item" href="{% url 'shop:category_view' 'electronics' %}"><i class="fas fa-laptop-code mr-2 text-primary"></i> Electronics</a>
+                                <a class="dropdown-item" href="{% url 'shop:category_view' 'clothing' %}"><i class="fas fa-shirt mr-2 text-primary"></i> Clothing</a>
+                                <a class="dropdown-item" href="{% url 'shop:category_view' 'sports' %}"><i class="fas fa-volleyball mr-2 text-primary"></i> Sports</a>
                             </div>
+                        </li>
+                    </ul>
 
-                            <!-- Expandable Search Bar -->
-                            <div>
-                                <form action="{% url 'shop:index' %}" method="GET" class="mb-0">
-                                    <div class="search-bar-container active">
-                                        <i class="fas fa-search magnifier text-secondary"></i>
-                                        <input 
-                                            type="text" 
-                                            name="item_name" 
-                                            class="input" 
-                                            placeholder="Search products..." 
-                                            value="{{ request.GET.item_name|default:'' }}"
-                                        >
+                    <!-- Centered Search Field -->
+                    <form action="{% url 'shop:index' %}" method="GET" class="search-form-modern mx-lg-3 my-2 my-lg-0">
+                        <div class="search-input-wrap">
+                            <i class="fas fa-magnifying-glass search-icon"></i>
+                            <input 
+                                type="text" 
+                                name="item_name" 
+                                class="form-control modern-search-input" 
+                                placeholder="Search products, brands..." 
+                                value="{{ request.GET.item_name|default:'' }}"
+                                autocomplete="off"
+                            >
+                        </div>
+                    </form>
+
+                    <!-- Right Controls: Auth & Cart -->
+                    <div class="d-flex align-items-center justify-content-between mt-3 mt-lg-0">
+                        <!-- User Dropdown or Login -->
+                        <div class="mr-3">
+                            {% if user.is_authenticated %}
+                                <div class="dropdown">
+                                    <button class="btn btn-user-pill dropdown-toggle" type="button" id="userMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <div class="user-avatar-circle"><i class="fas fa-user-check"></i></div>
+                                        <span class="user-name-label">{{ user.username|truncatechars:12 }}</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right glass-dropdown border-0 shadow-lg" aria-labelledby="userMenu">
+                                        <a class="dropdown-item" href="{% url 'useraccounts:profile' %}"><i class="far fa-user mr-2 text-muted"></i> Profile</a>
+                                        {% if user.is_staff %}
+                                            <a class="dropdown-item" href="{% url 'shop:order_list' %}"><i class="fas fa-boxes-stacked mr-2 text-muted"></i> Orders Admin</a>
+                                            <a class="dropdown-item" href="{% url 'shop:add_product' %}"><i class="fas fa-plus mr-2 text-muted"></i> Add Product</a>
+                                        {% endif %}
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item text-danger" href="{% url 'useraccounts:logout' %}"><i class="fas fa-arrow-right-from-bracket mr-2"></i> Log out</a>
                                     </div>
-                                </form>
-                            </div>
+                                </div>
+                            {% else %}
+                                <div class="auth-buttons-group">
+                                    <a href="{% url 'useraccounts:login' %}" class="btn btn-ghost-nav mr-1">Log in</a>
+                                    <a href="{% url 'useraccounts:register' %}" class="btn btn-primary-nav">Sign up</a>
+                                </div>
+                            {% endif %}
                         </div>
 
+                        <!-- Modern Cart Trigger -->
+                        <button id="cart" type="button" class="btn btn-cart-modern" data-toggle="popover" data-placement="bottom">
+                            <i class="fas fa-bag-shopping"></i>
+                            <span class="cart-pill-badge" id="cart-counter">0</span>
+                        </button>
                     </div>
-                </nav>
-            </div>
+                </div>
+            </nav>
         </div>
-        {% block content %}
-        {% endblock %}
-    </div> <!-- Closes main container -->
+    </header>
 
-    <!-- FOOTER -->
-    <footer class="site-footer mt-5">
-        <div class="container">
-            <div class="row">
+    <!-- Global Alert / Messages Container -->
+    <main class="container py-4">
+        {% if messages %}
+            <div class="messages-container mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show border-0 shadow-sm modern-alert" role="alert">
+                        <i class="fas fa-circle-info mr-2"></i> {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Modern Dark Tone Footer -->
+    <footer class="site-footer mt-auto">
+        <div class="container py-5">
+            <div class="row g-4">
                 <div class="col-lg-5 col-md-6 mb-4 mb-lg-0">
-                    <h5 class="footer-heading">About ShopSpace</h5>
-                    <p class="footer-text">
-                        Welcome to ShopSpace! We are dedicated to providing the best quality products with fast shipping and 24/7 customer support.
+                    <div class="footer-brand d-flex align-items-center mb-3">
+                        <span class="brand-badge mr-2"><i class="fas fa-layer-group"></i></span>
+                        <h5 class="text-white font-weight-bold mb-0">ShopSpace</h5>
+                    </div>
+                    <p class="footer-description">
+                        Engineered for effortless commerce. Experience vetted products, rapid delivery, and seamless transaction security.
                     </p>
-                    <div class="social-icons mt-3">
-                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    <div class="social-pills mt-3">
+                        <a href="#" class="social-pill-link" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-pill-link" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                        <a href="#" class="social-pill-link" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
 
                 <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                    <h5 class="footer-heading">Quick Links</h5>
-                    <ul class="list-unstyled footer-links">
-                        <li><a href="{% url 'shop:index' %}">Home</a></li>
-                        <li><a href="#">Featured Products</a></li>
-                        <li><a href="{% url 'shop:checkout' %}">Checkout</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
+                    <h6 class="footer-col-title">Navigation</h6>
+                    <ul class="list-unstyled footer-menu">
+                        <li><a href="{% url 'shop:index' %}">Shop Catalog</a></li>
+                        <li><a href="{% url 'shop:checkout' %}">Review Cart & Checkout</a></li>
+                        <li><a href="{% url 'shop:contactus' %}">Support & Contact</a></li>
                     </ul>
                 </div>
 
                 <div class="col-lg-4 col-md-12">
-                    <h5 class="footer-heading">Contact Us</h5>
-                    <ul class="list-unstyled footer-contact">
-                        <li><i class="fas fa-map-marker-alt mr-2 text-primary"></i>123 Commerce St, Suite 100, New York, NY</li>
-                        <li><i class="fas fa-phone-alt mr-2 text-primary"></i>+1 (555) 019-2834</li>
-                        <li><i class="fas fa-envelope mr-2 text-primary"></i>support@shopspace.com</li>
-                        <li><i class="fas fa-clock mr-2 text-primary"></i>Mon - Fri: 9:00 AM - 6:00 PM</li>
-                        <li><a href="{% url 'shop:contactus' %}"><i class="fas fa-paper-plane mr-2"></i>Send Message</a></li>
+                    <h6 class="footer-col-title">Customer Care</h6>
+                    <ul class="list-unstyled footer-contact-info">
+                        <li><i class="far fa-envelope mr-2 text-primary-light"></i> support@shopspace.com</li>
+                        <li><i class="fas fa-shield-halved mr-2 text-primary-light"></i> 256-Bit Encrypted Checkout</li>
+                        <li><i class="far fa-clock mr-2 text-primary-light"></i> Mon – Fri: 09:00 – 18:00 EST</li>
                     </ul>
                 </div>
             </div>
 
-            <hr class="footer-divider my-4">
-            <div class="row align-items-center">
-                <div class="col-md-12 text-center">
-                    <p class="copyright-text mb-0">&copy; 2026 ShopSpace. All rights reserved.</p>
+            <div class="footer-bottom pt-4 mt-4 border-top border-secondary-dark d-flex flex-column flex-sm-row justify-content-between align-items-center">
+                <p class="mb-0 text-muted small">&copy; {% now "Y" %} ShopSpace Inc. All rights reserved.</p>
+                <div class="payment-badges mt-2 mt-sm-0 text-muted small">
+                    <i class="fab fa-cc-visa mx-1 fa-lg"></i>
+                    <i class="fab fa-cc-mastercard mx-1 fa-lg"></i>
+                    <i class="fab fa-cc-stripe mx-1 fa-lg"></i>
                 </div>
             </div>
         </div>
     </footer>
 
-    <script type="text/javascript">
-        if(localStorage.getItem('cart') == null){
-            var cart = {};
-        } else { 
-            cart = JSON.parse(localStorage.getItem('cart'));
-        }
+    <!-- Bootstrap Core Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
-        updateCartCount(cart);
+    <!-- Cart State & Popover Script -->
+    <script>
+        var cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : {};
+        updateCartBadge(cart);
+        configureCartPopover(cart);
 
-        $(document).on('click','.atc',function(){
-            var item_id = this.id.toString();
-            var item_name = $(this).data('name') || document.getElementById("nm"+item_id).innerHTML;
-            var item_price = parseFloat($(this).data('price')); 
+        $(document).on('click', '.atc', function(e) {
+            e.preventDefault();
+            var itemId = this.id.toString();
+            var itemName = $(this).data('name') || $("#nm" + itemId).text().trim();
+            var itemPrice = parseFloat($(this).data('price'));
 
-            // Check if a quantity input exists for this specific item ID
-            var qty_input = document.getElementById('qty' + item_id);
-            var qty_to_add = qty_input ? parseInt(qty_input.value) : 1;
-
-            // Ensure the value is valid
-            if (isNaN(qty_to_add) || qty_to_add < 1) {
-                qty_to_add = 1; 
-            }
-
-            if (cart[item_id] != undefined) {
-                cart[item_id][0] = cart[item_id][0] + qty_to_add;
+            if (cart[itemId] !== undefined) {
+                cart[itemId][0] += 1;
             } else {
-                cart[item_id] = [qty_to_add, item_name, item_price];
+                cart[itemId] = [1, itemName, itemPrice];
             }
-            
+
             localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartCount(cart);
-            DisplayCart(cart); 
-        });
-        DisplayCart(cart);
+            updateCartBadge(cart);
+            configureCartPopover(cart);
 
-        function updateCartCount(cart) {
-            document.getElementById('cart').innerHTML = 
-                '<i class="fas fa-shopping-cart"></i> Cart <span class="cart-count">' + Object.keys(cart).length + '</span>';
+            // Button micro-interaction feedback
+            var $btn = $(this);
+            var originalContent = $btn.html();
+            $btn.addClass('btn-added').html('<i class="fas fa-check mr-1"></i> Added');
+            setTimeout(function() {
+                $btn.removeClass('btn-added').html(originalContent);
+            }, 1000);
+        });
+
+        function updateCartBadge(cartObj) {
+            var totalCount = 0;
+            for (var key in cartObj) {
+                totalCount += cartObj[key][0];
+            }
+            $('#cart-counter').text(totalCount);
         }
 
-        function DisplayCart(cart){
-            var cartString = "";
-            
-            if (Object.keys(cart).length === 0) {
-                cartString = "<div class='text-center p-2'><i class=\"fas fa-shopping-cart mb-2\" style=\"font-size:1.4rem;color:#E4E6EF;\"></i><div class='text-muted small'>Your cart is empty.</div></div>";
+        function configureCartPopover(cartObj) {
+            var cartHtml = "";
+            var keys = Object.keys(cartObj);
+
+            if (keys.length === 0) {
+                cartHtml = '<div class="text-center py-3 px-2 text-muted small"><i class="fas fa-basket-shopping fa-2x mb-2 d-block text-secondary"></i>Your cart is empty.</div>';
             } else {
-                cartString = "<h6 class='font-weight-bold mb-2'>Your Cart</h6>";
-                for(var x in cart){
-                    var itemName = cart[x][1]; 
-                    var qty = cart[x][0];
-                    cartString += "<div class='small mb-1 d-flex justify-content-between'><span>" + itemName + "</span><strong>&times;" + qty + "</strong></div>";
-                }
-                cartString += "<a href='/checkout' class='btn btn-primary btn-sm btn-block mt-3' id='checkout'>Checkout</a>";
+                cartHtml = '<div class="popover-cart-box"><h6 class="font-weight-bold mb-3 border-bottom pb-2">Your Bag</h6><div class="cart-items-scroll">';
+                var subtotal = 0;
+                keys.forEach(function(key) {
+                    var qty = cartObj[key][0];
+                    var name = cartObj[key][1];
+                    var price = cartObj[key][2] || 0;
+                    subtotal += (qty * price);
+                    cartHtml += '<div class="d-flex justify-content-between align-items-center mb-2 small">' +
+                                '<div class="text-truncate mr-2" style="max-width: 140px;">' + name + '</div>' +
+                                '<div class="font-weight-bold text-nowrap">' + qty + ' &times; $' + price.toFixed(2) + '</div>' +
+                                '</div>';
+                });
+                cartHtml += '</div><div class="d-flex justify-content-between font-weight-bold pt-2 border-top mt-2"><span>Subtotal:</span><span>$' + subtotal.toFixed(2) + '</span></div>';
+                cartHtml += '<a href="{% url "shop:checkout" %}" class="btn btn-checkout-primary btn-sm btn-block mt-3 py-2 font-weight-bold" id="checkout">Proceed to Checkout</a></div>';
             }
 
             $('#cart').popover('dispose');
-            document.getElementById("cart").setAttribute('data-content', cartString);
-            $('#cart').popover({ html: true });
+            $('#cart').popover({
+                html: true,
+                trigger: 'click',
+                content: cartHtml,
+                template: '<div class="popover popover-custom border-0 shadow-lg" role="tooltip"><div class="arrow"></div><div class="popover-body p-3"></div></div>'
+            });
         }
 
-        /* Search Bar Controller */
-        document.addEventListener("DOMContentLoaded", function () {
-            const searchBarContainerEl = document.querySelector(".search-bar-container");
-            const magnifierEl = document.querySelector(".magnifier");
-            const inputEl = document.querySelector(".input");
-            
-            if (searchBarContainerEl && magnifierEl && inputEl) {
-                const formEl = searchBarContainerEl.closest("form");
-
-                // Toggle or submit on magnifier click
-                magnifierEl.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (searchBarContainerEl.classList.contains("active")) {
-                        searchBarContainerEl.classList.remove("active");
-                        inputEl.focus();
-                    } else {
-                        if (inputEl.value.trim() !== "") {
-                            formEl.submit();
-                        } else {
-                            searchBarContainerEl.classList.add("active");
-                        }
-                    }
-                });
-
-                // Prevent click inside search bar from closing it
-                searchBarContainerEl.addEventListener("click", function(e) {
-                    e.stopPropagation();
-                });
-
-                // Collapse search bar when user clicks anywhere outside
-                document.addEventListener("click", function () {
-                    if (!searchBarContainerEl.classList.contains("active") && inputEl.value.trim() === "") {
-                        searchBarContainerEl.classList.add("active");
-                    }
-                });
-
-                // Submit on Enter key
-                inputEl.addEventListener("keydown", function (e) {
-                    if (e.key === "Enter") {
-                        if (inputEl.value.trim() !== "") {
-                            formEl.submit();
-                        } else {
-                            e.preventDefault();
-                            searchBarContainerEl.classList.add("active");
-                        }
-                    }
-                });
-            }
+        // Close popover when clicking outside
+        $(document).on('click', function (e) {
+            $('[data-toggle="popover"]').each(function () {
+                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                    $(this).popover('hide');
+                }
+            });
         });
     </script>
 </body>

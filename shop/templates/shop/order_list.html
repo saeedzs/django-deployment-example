@@ -1,71 +1,199 @@
 {% extends "shop/base.html" %}
-{% block content %}
+{% block title %}Orders Management — ShopSpace Staff{% endblock %}
 
-<div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Order Management</h2>
+{% block content %}
+<div class="order-list-dashboard pb-5">
+    
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <div class="d-flex align-items-center mb-1">
+                <span class="zone-icon zone-icon-slate mr-2"><i class="fas fa-boxes-stacked"></i></span>
+                <h2 class="h3 font-weight-bold mb-0 text-dark">Customer Orders</h2>
+            </div>
+            <p class="text-muted small mb-0">Track fulfillment status, inspect purchases, and update customer shipments.</p>
+        </div>
+
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <span class="badge badge-light border px-3 py-2 text-muted">
+                <i class="fas fa-list-check mr-1 text-primary"></i> <strong>{{ orders.count }}</strong> order{{ orders.count|pluralize }} recorded
+            </span>
+        </div>
     </div>
 
-    <!-- Search & Filter Controls -->
-    <form method="GET" action="{% url 'shop:order_list' %}" class="row g-2 mb-4">
-        <div class="col-md-5">
-            <input type="text" name="search" class="form-control" placeholder="Search by Order ID, Name, or Email..." value="{{ search_query }}">
+    <!-- Quick Status Filter Ribbon -->
+    <div class="category-ribbon mb-4 p-2 bg-white rounded-lg shadow-sm border d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="text-muted small font-weight-bold px-2 text-uppercase tracking-wider">Status:</span>
+            <a href="{% url 'shop:order_list' %}{% if search_query %}?search={{ search_query }}{% endif %}" 
+               class="category-pill {% if not status_filter %}active{% endif %}">
+                All Orders
+            </a>
+            {% for code, label in status_choices %}
+                <a href="{% url 'shop:order_list' %}?status={{ code }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                   class="category-pill {% if status_filter == code %}active{% endif %}">
+                    {{ label }}
+                </a>
+            {% endfor %}
         </div>
-        <div class="col-md-4">
-            <select name="status" class="form-control">
-                <option value="">All Statuses</option>
-                {% for code, label in status_choices %}
-                    <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100">Filter</button>
-            <a href="{% url 'shop:order_list' %}" class="btn btn-outline-secondary w-100">Reset</a>
-        </div>
-    </form>
 
-    <!-- Orders Table -->
-    <div class="table-responsive">
-        <table class="table table-hover border">
-            <thead class="table-light">
-                <tr>
-                    <th>Order #</th>
-                    <th>Customer</th>
-                    <th>Date</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in orders %}
-                <tr>
-                    <td>#{{ order.id }}</td>
-                    <td>{{ order.name }}<br><small class="text-muted">{{ order.email }}</small></td>
-                    <td>{{ order.created_at|date:"M d, Y" }}</td>
-                    <td>${{ order.total_price }}</td>
-                    <td>
-                        <span class="badge 
-                            {% if order.status == 'Delivered' %}badge-success
-                            {% elif order.status == 'Cancelled' %}badge-danger
-                            {% elif order.status == 'Shipped' %}badge-info
-                            {% else %}badge-warning{% endif %}">
-                            {{ order.status }}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">Manage</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center text-muted py-4">No orders found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% if search_query or status_filter %}
+            <div class="search-active-badge">
+                <a href="{% url 'shop:order_list' %}" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                    <i class="fas fa-xmark mr-1"></i> Clear Filters
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-lg mb-4 p-3 bg-white border">
+        <form method="GET" action="{% url 'shop:order_list' %}" class="row align-items-center g-2">
+            <!-- Search Text -->
+            <div class="col-md-7 mb-2 mb-md-0">
+                <div class="search-input-wrap">
+                    <i class="fas fa-magnifying-glass search-icon"></i>
+                    <input 
+                        type="text" 
+                        name="search" 
+                        class="form-control modern-search-input w-100" 
+                        placeholder="Search by Order ID, customer name, or email..." 
+                        value="{{ search_query }}"
+                    >
+                </div>
+            </div>
+
+            <!-- Status Dropdown -->
+            <div class="col-md-3 mb-2 mb-md-0">
+                <select name="status" class="form-control custom-select status-select-field">
+                    <option value="">All Statuses</option>
+                    {% for code, label in status_choices %}
+                        <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-atc btn-block py-2 font-weight-bold">
+                    <i class="fas fa-filter mr-1"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Orders Data Table -->
+    <div class="card card-zone-items shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="zone-table-head">
+                        <tr>
+                            <th scope="col" class="pl-4">Order ID</th>
+                            <th scope="col">Customer</th>
+                            <th scope="col">Date Placed</th>
+                            <th scope="col" class="text-center">Fulfillment Status</th>
+                            <th scope="col" class="text-right">Total Price</th>
+                            <th scope="col" class="text-center pr-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <!-- Order ID -->
+                            <td class="pl-4 py-3 font-weight-bold text-dark">
+                                <span class="order-id-badge">#{{ order.id }}</span>
+                            </td>
+
+                            <!-- Customer Info with Avatar -->
+                            <td class="py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="customer-avatar-sm mr-2">
+                                        {{ order.name|slice:":2"|upper }}
+                                    </div>
+                                    <div class="text-truncate" style="max-width: 220px;">
+                                        <div class="font-weight-bold text-dark text-truncate">{{ order.name }}</div>
+                                        <small class="text-muted d-block text-truncate">{{ order.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Date Placed -->
+                            <td class="py-3 text-muted small text-nowrap">
+                                <i class="far fa-clock mr-1"></i> {{ order.created_at|date:"M d, Y · H:i" }}
+                            </td>
+
+                            <!-- Status Badge -->
+                            <td class="text-center py-3 text-nowrap">
+                                {% if order.status == 'Delivered' %}
+                                    <span class="badge badge-status-delivered px-3 py-1">
+                                        <i class="fas fa-circle-check mr-1"></i> Delivered
+                                    </span>
+                                {% elif order.status == 'Shipped' %}
+                                    <span class="badge badge-status-shipped px-3 py-1">
+                                        <i class="fas fa-truck-fast mr-1"></i> Shipped
+                                    </span>
+                                {% elif order.status == 'Processing' %}
+                                    <span class="badge badge-status-processing px-3 py-1">
+                                        <i class="fas fa-boxes-packing mr-1"></i> Processing
+                                    </span>
+                                {% elif order.status == 'Cancelled' %}
+                                    <span class="badge badge-status-cancelled px-3 py-1">
+                                        <i class="fas fa-circle-xmark mr-1"></i> Cancelled
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-status-pending px-3 py-1">
+                                        <i class="fas fa-clock mr-1"></i> Pending
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Total Price -->
+                            <td class="text-right py-3 font-weight-bold text-emerald-dark">
+                                ${{ order.total_price }}
+                            </td>
+
+                            <!-- Action Button -->
+                            <td class="text-center pr-4 py-3 text-nowrap">
+                                <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-sm btn-inspect px-3 font-weight-bold">
+                                    Manage <i class="fas fa-arrow-right ml-1"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="empty-state-box py-4">
+                                    <i class="fas fa-box-open fa-3x text-muted mb-3 opacity-50"></i>
+                                    <h5>No orders found</h5>
+                                    <p class="text-muted small mb-3">
+                                        {% if search_query or status_filter %}
+                                            No orders match your filter criteria "{{ search_query|default:status_filter }}".
+                                        {% else %}
+                                            No customer orders have been placed yet.
+                                        {% endif %}
+                                    </p>
+                                    {% if search_query or status_filter %}
+                                        <a href="{% url 'shop:order_list' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">
+                                            Reset Filters
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Table Footer Strip -->
+        <div class="card-footer bg-light border-top py-3 d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Displaying sorted dispatches (most recent first).</span>
+            <span class="small font-weight-bold text-dark">{{ orders|length }} result{{ orders|length|pluralize }}</span>
+        </div>
     </div>
 </div>
-
 {% endblock %}

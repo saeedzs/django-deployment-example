@@ -1,47 +1,73 @@
 {% extends "shop/base.html" %}
+{% block title %}My Account & Profile — ShopSpace{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        
-        <!-- Left Column: Profile Card & Staff Controls -->
+<div class="user-profile-dashboard pb-5">
+    
+    <!-- Top Action & Navigation Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <div class="d-flex align-items-center mb-1">
+                <span class="zone-icon zone-icon-sky mr-2"><i class="fas fa-user-check"></i></span>
+                <h2 class="h3 font-weight-bold mb-0 text-dark">Member Profile</h2>
+            </div>
+            <p class="text-muted small mb-0">Manage account preferences, inspect recent purchases, and access store portals.</p>
+        </div>
+
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'shop:index' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fas fa-store mr-1"></i> Continue Shopping
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT COLUMN: Profile Card & Staff Controls -->
         <div class="col-lg-4 mb-4">
             
-            <!-- User Info Card -->
-            <div class="card border-0 shadow-sm mb-4">
+            <!-- User Profile Summary Card -->
+            <div class="card card-zone-sky shadow-sm border-0 mb-4">
                 <div class="card-body text-center p-4">
-                    <i class="fas fa-user-circle text-secondary mb-3" style="font-size: 4.5rem;"></i>
-                    <h4 class="font-weight-bold mb-1">{{ user.first_name|default:user.username }}</h4>
-                    <p class="text-muted mb-2 small">{{ user.email }}</p>
-                    <div class="mb-3">
-                        <span class="badge badge-light text-muted border px-2 py-1">
-                            <i class="far fa-calendar-alt mr-1"></i> Member since {{ user.date_joined|date:"M Y" }}
+                    <div class="customer-avatar mx-auto mb-3" style="width: 72px; height: 72px; font-size: 1.6rem;">
+                        {{ user.first_name|default:user.username|slice:":2"|upper }}
+                    </div>
+                    <h4 class="font-weight-bold mb-1 text-dark">{{ user.first_name|default:user.username }}</h4>
+                    <p class="text-muted small mb-3">{{ user.email }}</p>
+                    
+                    <div class="mb-4">
+                        <span class="badge badge-light border text-muted px-3 py-1 font-weight-normal">
+                            <i class="far fa-calendar-alt mr-1 text-primary"></i> Member since {{ user.date_joined|date:"M Y" }}
                         </span>
                     </div>
-                    <a href="{% url 'useraccounts:password_change' %}" class="btn btn-outline-primary btn-sm btn-block">
-                        <i class="fas fa-key mr-1"></i> Change Password
+
+                    <a href="{% url 'useraccounts:password_change' %}" class="btn btn-outline-primary btn-sm btn-block rounded-pill py-2 font-weight-bold">
+                        <i class="fas fa-key mr-1"></i> Update Password
                     </a>
                 </div>
             </div>
 
-            <!-- Staff Dashboard Card (Visible ONLY to Staff) -->
+            <!-- Staff Administrative Control Panel (Visible ONLY to Staff) -->
             {% if user.is_staff %}
-                <div class="card border-0 shadow-sm bg-light">
+                <div class="card card-zone-amber shadow-sm border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex align-items-center">
+                        <span class="zone-icon zone-icon-amber mr-2"><i class="fas fa-shield-halved"></i></span>
+                        <h5 class="mb-0 font-weight-bold text-dark">Staff Control Portal</h5>
+                    </div>
                     <div class="card-body p-4">
-                        <h5 class="card-title font-weight-bold text-dark mb-2">
-                            <i class="fas fa-user-shield text-primary mr-2"></i>Staff Panel
-                        </h5>
-                        <p class="text-muted small mb-3">Quick access to store administration tools.</p>
+                        <p class="text-muted small mb-3">Quick administrative shortcuts to store management views.</p>
                         
-                        <div class="d-grid gap-2">
-                            <a href="{% url 'shop:order_list' %}" class="btn btn-warning btn-block text-left mb-2">
-                                <i class="fas fa-list-alt mr-2"></i> View Orders
+                        <div class="d-flex flex-column gap-2">
+                            <a href="{% url 'shop:order_list' %}" class="btn btn-light border bg-white text-dark text-left d-flex align-items-center justify-content-between p-3 rounded-lg mb-2 shadow-sm font-weight-bold text-decoration-none">
+                                <span><i class="fas fa-boxes-stacked text-warning mr-2"></i> Manage Orders</span>
+                                <i class="fas fa-chevron-right text-muted small"></i>
                             </a>
-                            <a href="{% url 'shop:read_messages' %}" class="btn btn-info btn-block text-left mb-2 text-white">
-                                <i class="fas fa-envelope mr-2"></i> Customer Messages
+                            <a href="{% url 'shop:read_messages' %}" class="btn btn-light border bg-white text-dark text-left d-flex align-items-center justify-content-between p-3 rounded-lg mb-2 shadow-sm font-weight-bold text-decoration-none">
+                                <span><i class="fas fa-envelope-open-text text-info mr-2"></i> Customer Inquiries</span>
+                                <i class="fas fa-chevron-right text-muted small"></i>
                             </a>
-                            <a href="{% url 'shop:add_product' %}" class="btn btn-success btn-block text-left mb-0">
-                                <i class="fas fa-plus-circle mr-2"></i> Add New Product
+                            <a href="{% url 'shop:add_product' %}" class="btn btn-light border bg-white text-dark text-left d-flex align-items-center justify-content-between p-3 rounded-lg mb-0 shadow-sm font-weight-bold text-decoration-none">
+                                <span><i class="fas fa-circle-plus text-success mr-2"></i> Add Catalog Item</span>
+                                <i class="fas fa-chevron-right text-muted small"></i>
                             </a>
                         </div>
                     </div>
@@ -50,66 +76,102 @@
 
         </div>
 
-        <!-- Right Column: Order History -->
+        <!-- RIGHT COLUMN: Customer Order History -->
         <div class="col-lg-8">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <h4 class="font-weight-bold mb-0">
-                    <i class="fas fa-shopping-bag mr-2 text-primary"></i>My Order History
-                </h4>
+            <div class="card card-zone-items shadow-sm border-0">
+                <div class="card-header bg-transparent py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <span class="zone-icon zone-icon-slate mr-2"><i class="fas fa-bag-shopping"></i></span>
+                        <h5 class="mb-0 font-weight-bold text-dark">My Order History</h5>
+                    </div>
+                    {% if orders %}
+                        <span class="badge badge-light border text-muted">
+                            {{ orders|length }} order{{ orders|length|pluralize }} placed
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-0">
+                    {% if orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="zone-table-head">
+                                    <tr>
+                                        <th scope="col" class="pl-4">Order ID</th>
+                                        <th scope="col">Date Placed</th>
+                                        <th scope="col">Total Paid</th>
+                                        <th scope="col" class="text-center">Fulfillment Status</th>
+                                        <th scope="col" class="text-right pr-4">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td class="pl-4 py-3 font-weight-bold text-dark">
+                                            <span class="order-id-badge">#{{ order.id }}</span>
+                                        </td>
+                                        <td class="py-3 text-muted small text-nowrap">
+                                            <i class="far fa-clock mr-1"></i> {{ order.created_at|date:"M d, Y" }}
+                                        </td>
+                                        <td class="py-3 font-weight-bold text-emerald-dark">
+                                            ${{ order.total_price }}
+                                        </td>
+                                        <td class="text-center py-3 text-nowrap">
+                                            {% if order.status == 'Delivered' %}
+                                                <span class="badge badge-status-delivered px-3 py-1">
+                                                    <i class="fas fa-circle-check mr-1"></i> Delivered
+                                                </span>
+                                            {% elif order.status == 'Shipped' %}
+                                                <span class="badge badge-status-shipped px-3 py-1">
+                                                    <i class="fas fa-truck-fast mr-1"></i> Shipped
+                                                </span>
+                                            {% elif order.status == 'Processing' %}
+                                                <span class="badge badge-status-processing px-3 py-1">
+                                                    <i class="fas fa-boxes-packing mr-1"></i> Processing
+                                                </span>
+                                            {% elif order.status == 'Cancelled' %}
+                                                <span class="badge badge-status-cancelled px-3 py-1">
+                                                    <i class="fas fa-circle-xmark mr-1"></i> Cancelled
+                                                </span>
+                                            {% else %}
+                                                <span class="badge badge-status-pending px-3 py-1">
+                                                    <i class="fas fa-clock mr-1"></i> Pending
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-right pr-4 py-3 text-nowrap">
+                                            <a href="{% url 'useraccounts:user_order_detail' order.id %}" class="btn btn-sm btn-inspect px-3 font-weight-bold">
+                                                Receipt <i class="fas fa-arrow-right ml-1"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="empty-state-box py-4">
+                                <i class="fas fa-box-open fa-3x text-muted mb-3 opacity-50"></i>
+                                <h5>No Orders Found</h5>
+                                <p class="text-muted small mb-3">You haven't placed any purchases with us yet.</p>
+                                <a href="{% url 'shop:index' %}" class="btn btn-atc px-4 py-2 font-weight-bold rounded-pill text-decoration-none">
+                                    Start Shopping
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
                 {% if orders %}
-                    <span class="badge badge-pill badge-secondary">{{ orders|length }} Orders</span>
+                    <div class="card-footer bg-light border-top py-3 d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Need help with an existing shipment? Contact customer support.</span>
+                        <a href="{% url 'shop:contactus' %}" class="small font-weight-bold text-primary text-decoration-none">
+                            <i class="far fa-comment-dots mr-1"></i> Support
+                        </a>
+                    </div>
                 {% endif %}
             </div>
-
-            {% if orders %}
-                <div class="card border-0 shadow-sm">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th class="border-0">Order #</th>
-                                    <th class="border-0">Date</th>
-                                    <th class="border-0">Total</th>
-                                    <th class="border-0">Status</th>
-                                    <th class="border-0 text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for order in orders %}
-                                <tr>
-                                    <td class="font-weight-bold align-middle">#{{ order.id }}</td>
-                                    <td class="align-middle">{{ order.created_at|date:"M d, Y" }}</td>
-                                    <td class="align-middle font-weight-bold text-dark">${{ order.total_price }}</td>
-                                    <td class="align-middle">
-                                        {% if order.status == 'Delivered' %}
-                                            <span class="badge badge-success px-2 py-1">Delivered</span>
-                                        {% elif order.status == 'Cancelled' %}
-                                            <span class="badge badge-danger px-2 py-1">Cancelled</span>
-                                        {% else %}
-                                            <span class="badge badge-warning px-2 py-1">{{ order.status }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="align-middle text-right">
-                                        <a href="{% url 'useraccounts:user_order_detail' order.id %}" class="btn btn-outline-primary btn-sm">
-                                            Details
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            {% else %}
-                <div class="card border-0 shadow-sm p-5 text-center">
-                    <i class="fas fa-box-open text-muted mb-3" style="font-size: 3rem;"></i>
-                    <h5 class="text-muted mb-2">No Orders Found</h5>
-                    <p class="text-muted small mb-4">You haven't placed any orders with us yet.</p>
-                    <div>
-                        <a href="{% url 'shop:index' %}" class="btn btn-primary px-4">Start Shopping</a>
-                    </div>
-                </div>
-            {% endif %}
         </div>
 
     </div>

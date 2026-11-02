@@ -42,3 +42,18 @@ class ProductForm(forms.ModelForm):
             'category': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control-file'}),
         }
+        
+        
+class OrderShippingForm(forms.ModelForm):
+    class Meta:
+        model = Order  #[cite: 11]
+        fields = ['name', 'email', 'phone_num', 'address', 'city', 'state', 'zip_code']  #[cite: 11]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone_num': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.TextInput(attrs={'class': 'form-control'}),
+            'city': forms.TextInput(attrs={'class': 'form-control'}),
+            'state': forms.TextInput(attrs={'class': 'form-control'}),
+            'zip_code': forms.TextInput(attrs={'class': 'form-control'}),
+        }

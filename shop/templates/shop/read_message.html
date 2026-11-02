@@ -1,25 +1,88 @@
-{% extends 'shop/base.html' %}
+{% extends "shop/base.html" %}
+{% block title %}Customer Messages Portal — ShopSpace Staff{% endblock %}
+
 {% block content %}
-{% if messages %}
-    <div class="container my-5">
-        <h2 class="mb-4">Contact Messages</h2>
-        <div class="list-group">
-            {% for message in messages %}
-                <div class="list-group-item list-group-item-action flex-column align-items-start mb-3 shadow-sm">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">{{ message.name }}</h5>
-                        <small class="text-muted">{{ message.created_at|date:"F d, Y \a\t H:i" }}</small>
-                    </div>
-                    <p class="mb-1"><strong>Email:</strong> {{ message.email }}</p>
-                    <p class="mb-1"><strong>Subject:</strong> {{ message.subject }}</p>
-                    <p class="mb-1"><strong>Message:</strong> {{ message.message }}</p>
-                </div>
-            {% endfor %}
+<div class="messages-portal-dashboard pb-5">
+    
+    <!-- Top Action & Navigation Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <div class="d-flex align-items-center mb-1">
+                <span class="zone-icon zone-icon-amber mr-2"><i class="fas fa-envelope-open-text"></i></span>
+                <h2 class="h3 font-weight-bold mb-0 text-dark">Customer Inquiries</h2>
+            </div>
+            <p class="text-muted small mb-0">Review questions submitted through the public Contact Us form.</p>
+        </div>
+
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <span class="badge badge-light border px-3 py-2 text-muted">
+                <i class="far fa-comments mr-1 text-primary"></i> <strong>{{ messages.count }}</strong> message{{ messages.count|pluralize }} received
+            </span>
+            <a href="{% url 'shop:order_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fas fa-boxes-stacked mr-1"></i> Orders Portal
+            </a>
         </div>
     </div>
-{% else %}
-    <div class="container my-5">
-        <h2 class="text-center text-muted">No messages to display.</h2>
+
+    <!-- Messages Container -->
+    <div class="card card-zone-items shadow-sm border-0">
+        <div class="card-header bg-transparent py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 font-weight-bold text-dark">Inbox Messages</h5>
+            <span class="text-muted small">Sorted by most recent</span>
+        </div>
+
+        <div class="card-body p-0">
+            {% if messages %}
+                <div class="list-group list-group-flush">
+                    {% for msg in messages %}
+                    <div class="list-group-item p-4 border-bottom message-item-hover">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-2">
+                            <!-- Sender & Avatar -->
+                            <div class="d-flex align-items-center mb-2 mb-md-0">
+                                <div class="customer-avatar-sm mr-3">
+                                    {{ msg.name|slice:":2"|upper }}
+                                </div>
+                                <div>
+                                    <h6 class="font-weight-bold mb-0 text-dark">{{ msg.name }}</h6>
+                                    <a href="mailto:{{ msg.email }}" class="small text-primary text-decoration-none">
+                                        <i class="far fa-envelope mr-1"></i>{{ msg.email }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Timestamp & Action -->
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge badge-light border text-muted px-2 py-1 small mr-2">
+                                    <i class="far fa-clock mr-1"></i> {{ msg.created_at|date:"M d, Y · H:i" }}
+                                </span>
+                                <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject|urlencode }}" class="btn btn-sm btn-inspect px-3 font-weight-bold">
+                                    <i class="fas fa-reply mr-1"></i> Reply
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="font-weight-bold text-dark mt-2 mb-1">
+                            <i class="fas fa-tag fa-xs text-muted mr-1"></i> {{ msg.subject }}
+                        </div>
+
+                        <!-- Message Body Text -->
+                        <div class="p-3 bg-light rounded border text-muted small mt-2" style="white-space: pre-line;">
+                            {{ msg.message }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="empty-state-box py-4">
+                        <i class="far fa-envelope-open fa-3x text-muted mb-3 opacity-50"></i>
+                        <h5>No Messages Found</h5>
+                        <p class="text-muted small mb-0">Your customer contact inbox is completely clear.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     </div>
-{% endif %}
+</div>
 {% endblock %}

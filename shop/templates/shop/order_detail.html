@@ -1,54 +1,109 @@
 {% extends "shop/base.html" %}
-{% block content %}
+{% block title %}Order #{{ order.id }} Staff Overview — ShopSpace{% endblock %}
 
-<div class="container my-5">
-    <!-- Header & Navigation -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+{% block content %}
+<div class="order-detail-dashboard pb-5">
+    
+    <!-- Top Action & Navigation Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
         <div>
-            <h2 class="font-weight-bold mb-1">Order #{{ order.id }}</h2>
-            <p class="text-muted mb-0">Placed on {{ order.created_at|date:"F d, Y \a\t H:i" }}</p>
+            <a href="{% url 'shop:order_list' %}" class="text-muted text-decoration-none small">
+                <i class="fas fa-arrow-left mr-1"></i> Back to Orders Dashboard
+            </a>
+            <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+                <h2 class="h3 font-weight-bold mb-0 text-dark">Order #{{ order.id }}</h2>
+                
+                <!-- Dynamic Color-Coded Status Badge -->
+                {% if order.status == 'Delivered' %}
+                    <span class="badge badge-status-delivered px-3 py-2">
+                        <i class="fas fa-circle-check mr-1"></i> Delivered
+                    </span>
+                {% elif order.status == 'Shipped' %}
+                    <span class="badge badge-status-shipped px-3 py-2">
+                        <i class="fas fa-truck-fast mr-1"></i> Shipped
+                    </span>
+                {% elif order.status == 'Processing' %}
+                    <span class="badge badge-status-processing px-3 py-2">
+                        <i class="fas fa-boxes-packing mr-1"></i> Processing
+                    </span>
+                {% elif order.status == 'Cancelled' %}
+                    <span class="badge badge-status-cancelled px-3 py-2">
+                        <i class="fas fa-circle-xmark mr-1"></i> Cancelled
+                    </span>
+                {% else %}
+                    <span class="badge badge-status-pending px-3 py-2">
+                        <i class="fas fa-clock mr-1"></i> Pending Payment / Prep
+                    </span>
+                {% endif %}
+            </div>
+            <p class="text-muted small mb-0 mt-1">
+                <i class="far fa-calendar-alt mr-1"></i> Placed on {{ order.created_at|date:"F d, Y \a\t H:i" }}
+            </p>
         </div>
-        <a href="{% url 'shop:order_list' %}" class="btn btn-outline-secondary">
-            &larr; Back to My Orders
-        </a>
+
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fas fa-print mr-1"></i> Print Invoice
+            </button>
+        </div>
     </div>
 
-    <div class="row">
-        <!-- Main Content: Items List -->
+    <div class="row g-4">
+        <!-- LEFT COLUMN: Order Items Table -->
         <div class="col-lg-8 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 font-weight-bold">Order Items</h5>
+            <div class="card card-zone-items shadow-sm border-0 h-100">
+                <div class="card-header bg-transparent py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <span class="zone-icon zone-icon-slate mr-2"><i class="fas fa-bag-shopping"></i></span>
+                        <h5 class="mb-0 font-weight-bold text-dark">Purchased Items</h5>
+                    </div>
+                    <span class="badge badge-light border text-muted">
+                        {% if items_data %}{{ items_data|length }} product(s){% else %}0 items{% endif %}
+                    </span>
                 </div>
+                
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
+                            <thead class="zone-table-head">
                                 <tr>
-                                    <th scope="col" class="pl-4">Item</th>
+                                    <th scope="col" class="pl-4">Item Details</th>
                                     <th scope="col" class="text-center">Quantity</th>
-                                    <th scope="col" class="text-right pr-4">Price</th>
+                                    <th scope="col" class="text-right">Unit Price</th>
+                                    <th scope="col" class="text-right pr-4">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% if items_data %}
-                                    <!-- Iterates over dictionary key-value pairs (item_id, details) -->
                                     {% for item_id, details in items_data.items %}
                                     <tr>
-                                        <td class="pl-4">
-                                            <!-- Index 1: Product Name / Title -->
-                                            <div class="font-weight-bold">{{ details.1 }}</div>
+                                        <td class="pl-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="item-avatar-box mr-3">
+                                                    <i class="fas fa-box-open text-muted"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-weight-bold text-dark">{{ details.1 }}</div>
+                                                    <small class="text-muted">Item ID: #{{ item_id }}</small>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <!-- Index 0: Quantity -->
-                                        <td class="text-center">{{ details.0 }}</td>
-                                        <!-- Index 2: Price -->
-                                        <td class="text-right pr-4">${{ details.2 }}</td>
+                                        <td class="text-center py-3">
+                                            <span class="badge badge-qty-pill">&times; {{ details.0 }}</span>
+                                        </td>
+                                        <td class="text-right py-3 text-muted">
+                                            ${{ details.2|floatformat:2 }}
+                                        </td>
+                                        <td class="text-right pr-4 py-3 font-weight-bold text-dark">
+                                            ${% widthratio details.0 1 details.2 %}
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">
-                                            No item details available.
+                                        <td colspan="4" class="text-center text-muted py-5">
+                                            <i class="fas fa-basket-shopping fa-2x mb-2 d-block opacity-50"></i>
+                                            No item details recorded for this order.
                                         </td>
                                     </tr>
                                 {% endif %}
@@ -56,35 +111,52 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Footer Summary Strip -->
+                <div class="card-footer bg-light border-top py-3 d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Standard fulfillment policy applies to this dispatch.</span>
+                    <span class="small font-weight-bold text-muted">Subtotal: ${{ order.total_price }}</span>
+                </div>
             </div>
         </div>
 
-        <!-- Sidebar: Payment & Shipping Details -->
+        <!-- RIGHT COLUMN: Color-Coded Workflow Panels -->
         <div class="col-lg-4">
-            <!-- Order Summary Card -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 font-weight-bold">Payment Summary</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Total Amount</span>
-                        <span class="h4 font-weight-bold text-success mb-0">${{ order.total_price }}</span>
+            
+            <!-- 1. EMERALD ZONE: Financial & Payment Summary -->
+            <div class="card card-zone-emerald shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="zone-icon zone-icon-emerald"><i class="fas fa-receipt"></i></span>
+                        <span class="badge badge-emerald-pill font-weight-bold">Paid / Verified</span>
+                    </div>
+                    <small class="text-uppercase font-weight-bold tracking-wider text-emerald-muted d-block">
+                        Total Amount Charged
+                    </small>
+                    <div class="h2 font-weight-bold text-emerald-dark mb-3">
+                        ${{ order.total_price }}
+                    </div>
+                    <div class="p-2 rounded bg-white-50 border-emerald-subtle d-flex justify-content-between small text-emerald-muted">
+                        <span>Payment Method:</span>
+                        <span class="font-weight-bold text-dark"><i class="fas fa-credit-card mr-1"></i> Direct Checkout</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Insert this inside the col-lg-4 sidebar in order_detail.html -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 font-weight-bold">Update Order Status</h5>
+            <!-- 2. AMBER ZONE: Status & Dispatch Action -->
+            <div class="card card-zone-amber shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex align-items-center">
+                    <span class="zone-icon zone-icon-amber mr-2"><i class="fas fa-sliders"></i></span>
+                    <h5 class="mb-0 font-weight-bold text-dark">Update Order Status</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form method="POST">
                         {% csrf_token %}
+                        <input type="hidden" name="action" value="update_status">
+                        
                         <div class="form-group mb-3">
-                            <label class="small text-muted font-weight-bold">CURRENT STATUS</label>
-                            <select name="status" class="form-control">
+                            <label class="small text-muted font-weight-bold text-uppercase">Change Current Stage</label>
+                            <select name="status" class="form-control custom-select status-select-field">
                                 {% for code, label in status_choices %}
                                     <option value="{{ code }}" {% if order.status == code %}selected{% endif %}>
                                         {{ label }}
@@ -92,41 +164,135 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-success btn-block">Update Status</button>
+                        
+                        <button type="submit" class="btn btn-amber-submit btn-block font-weight-bold">
+                            <i class="fas fa-rotate mr-1"></i> Save Status Change
+                        </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Customer & Shipping Info Card -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="mb-0 font-weight-bold">Shipping & Contact Details</h5>
+            <!-- 3. SKY/INDIGO ZONE: Customer Profile & Shipping Information -->
+            <div class="card card-zone-sky shadow-sm border-0">
+                <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <span class="zone-icon zone-icon-sky mr-2"><i class="fas fa-location-dot"></i></span>
+                        <h5 class="mb-0 font-weight-bold text-dark">Shipping & Contact</h5>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none font-weight-bold" data-toggle="modal" data-target="#editShippingModal">
+                        <i class="fas fa-user-pen mr-1"></i> Edit
+                    </button>
                 </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <small class="text-muted d-block text-uppercase font-weight-bold">Customer Name</small>
-                        <span>{{ order.name }}</span>
+
+                <div class="card-body p-4">
+                    <!-- Customer Name & Avatar -->
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <div class="customer-avatar mr-3">
+                            {{ order.name|slice:":2"|upper }}
+                        </div>
+                        <div class="text-truncate">
+                            <div class="font-weight-bold text-dark text-truncate">{{ order.name }}</div>
+                            <small class="text-muted">Registered Customer</small>
+                        </div>
                     </div>
+
+                    <!-- Contact Details with Action Links -->
                     <div class="mb-3">
-                        <small class="text-muted d-block text-uppercase font-weight-bold">Email Address</small>
-                        <span>{{ order.email }}</span>
+                        <small class="text-muted text-uppercase font-weight-bold d-block mb-1">Email Address</small>
+                        <a href="mailto:{{ order.email }}" class="text-dark font-weight-semibold text-decoration-none contact-link">
+                            <i class="far fa-envelope text-primary mr-2"></i>{{ order.email }}
+                        </a>
                     </div>
+
                     <div class="mb-3">
-                        <small class="text-muted d-block text-uppercase font-weight-bold">Phone Number</small>
-                        <span>{{ order.phone_num }}</span>
+                        <small class="text-muted text-uppercase font-weight-bold d-block mb-1">Phone Number</small>
+                        <a href="tel:{{ order.phone_num }}" class="text-dark font-weight-semibold text-decoration-none contact-link">
+                            <i class="fas fa-phone text-primary mr-2"></i>{{ order.phone_num }}
+                        </a>
                     </div>
-                    <hr>
+
+                    <hr class="my-3">
+
+                    <!-- Destination Address -->
                     <div>
-                        <small class="text-muted d-block text-uppercase font-weight-bold">Shipping Address</small>
-                        <address class="mb-0">
-                            {{ order.address }}<br>
-                            {{ order.city }}, {{ order.state }} {{ order.zip_code }}
-                        </address>
+                        <small class="text-muted text-uppercase font-weight-bold d-block mb-1">Destination Address</small>
+                        <div class="p-3 bg-light rounded border small">
+                            <div class="font-weight-bold text-dark mb-1">{{ order.address }}</div>
+                            <div class="text-muted">{{ order.city }}, {{ order.state }} {{ order.zip_code }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 
+<!-- Modal: Edit Shipping & Customer Details -->
+<div class="modal fade" id="editShippingModal" tabindex="-1" role="dialog" aria-labelledby="editShippingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                <div class="d-flex align-items-center">
+                    <span class="zone-icon zone-icon-sky mr-2"><i class="fas fa-user-pen"></i></span>
+                    <div>
+                        <h5 class="modal-title font-weight-bold text-dark" id="editShippingModalLabel">Edit Customer & Shipping Details</h5>
+                        <small class="text-muted">Fix typos in customer phone numbers, names, or delivery addresses.</small>
+                    </div>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_shipping">
+                
+                <div class="modal-body py-4 px-4">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="small text-muted font-weight-bold text-uppercase">Customer Name</label>
+                            {{ shipping_form.name }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="small text-muted font-weight-bold text-uppercase">Email Address</label>
+                            {{ shipping_form.email }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="small text-muted font-weight-bold text-uppercase">Phone Number</label>
+                        {{ shipping_form.phone_num }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="small text-muted font-weight-bold text-uppercase">Street Address</label>
+                        {{ shipping_form.address }}
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-5">
+                            <label class="small text-muted font-weight-bold text-uppercase">City</label>
+                            {{ shipping_form.city }}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label class="small text-muted font-weight-bold text-uppercase">State / Province</label>
+                            {{ shipping_form.state }}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label class="small text-muted font-weight-bold text-uppercase">Postal Code</label>
+                            {{ shipping_form.zip_code }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 pt-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 font-weight-bold shadow-sm">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

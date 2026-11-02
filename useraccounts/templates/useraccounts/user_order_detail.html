@@ -1,37 +1,179 @@
 {% extends "shop/base.html" %}
+{% block title %}Order #{{ order.id }} Receipt — ShopSpace{% endblock %}
 
 {% block content %}
-<div class="container my-5" style="max-width: 700px;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Order #{{ order.id }}</h3>
-        <a href="{% url 'useraccounts:profile' %}" class="btn btn-outline-secondary btn-sm">&larr; Back to Profile</a>
-    </div>
+<div class="user-order-detail-page pb-5">
+    
+    <!-- Top Action & Navigation Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <a href="{% url 'useraccounts:profile' %}" class="text-muted text-decoration-none small">
+                <i class="fas fa-arrow-left mr-1"></i> Back to My Profile
+            </a>
+            <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+                <h2 class="h3 font-weight-bold mb-0 text-dark">Order Receipt #{{ order.id }}</h2>
+                
+                <!-- Status Badge -->
+                {% if order.status == 'Delivered' %}
+                    <span class="badge badge-status-delivered px-3 py-2">
+                        <i class="fas fa-circle-check mr-1"></i> Delivered
+                    </span>
+                {% elif order.status == 'Shipped' %}
+                    <span class="badge badge-status-shipped px-3 py-2">
+                        <i class="fas fa-truck-fast mr-1"></i> Shipped
+                    </span>
+                {% elif order.status == 'Processing' %}
+                    <span class="badge badge-status-processing px-3 py-2">
+                        <i class="fas fa-boxes-packing mr-1"></i> Processing
+                    </span>
+                {% elif order.status == 'Cancelled' %}
+                    <span class="badge badge-status-cancelled px-3 py-2">
+                        <i class="fas fa-circle-xmark mr-1"></i> Cancelled
+                    </span>
+                {% else %}
+                    <span class="badge badge-status-pending px-3 py-2">
+                        <i class="fas fa-clock mr-1"></i> Order Placed & Pending
+                    </span>
+                {% endif %}
+            </div>
+            <p class="text-muted small mb-0 mt-1">
+                <i class="far fa-calendar-alt mr-1"></i> Placed on {{ order.created_at|date:"F d, Y \a\t H:i" }}
+            </p>
+        </div>
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-            <h5 class="card-title font-weight-bold mb-3">Order Status</h5>
-            <p class="mb-1"><strong>Status:</strong> <span class="badge badge-info">{{ order.status }}</span></p>
-            <p class="mb-1"><strong>Date Placed:</strong> {{ order.created_at|date:"F d, Y - H:i" }}</p>
-            <p class="mb-0"><strong>Total Paid:</strong> ${{ order.total_price }}</p>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fas fa-print mr-1"></i> Print Receipt
+            </button>
+            <a href="{% url 'shop:contactus' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                <i class="far fa-envelope mr-1"></i> Order Help
+            </a>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <h5 class="card-title font-weight-bold mb-3">Items Ordered</h5>
-            <ul class="list-group list-group-flush">
-                {% for item, details in items_data.items %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <h6 class="mb-0">{{ details.1|default:item }}</h6>
-                            <small class="text-muted">Quantity: {{ details.0 }}</small>
+    <div class="row g-4">
+        <!-- LEFT COLUMN: Purchased Items Table -->
+        <div class="col-lg-8 mb-4">
+            <div class="card card-zone-items shadow-sm border-0 h-100">
+                <div class="card-header bg-transparent py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <span class="zone-icon zone-icon-slate mr-2"><i class="fas fa-bag-shopping"></i></span>
+                        <h5 class="mb-0 font-weight-bold text-dark">Purchased Items</h5>
+                    </div>
+                    <span class="badge badge-light border text-muted">
+                        {% if items_data %}{{ items_data|length }} item(s){% else %}0 items{% endif %}
+                    </span>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="zone-table-head">
+                                <tr>
+                                    <th scope="col" class="pl-4">Item Details</th>
+                                    <th scope="col" class="text-center">Quantity</th>
+                                    <th scope="col" class="text-right">Unit Price</th>
+                                    <th scope="col" class="text-right pr-4">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if items_data %}
+                                    {% for item_id, details in items_data.items %}
+                                    <tr>
+                                        <td class="pl-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="item-avatar-box mr-3">
+                                                    <i class="fas fa-box-open text-muted"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-weight-bold text-dark">{{ details.1|default:item_id }}</div>
+                                                    <small class="text-muted">Item Ref: #{{ item_id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center py-3">
+                                            <span class="badge badge-qty-pill">&times; {{ details.0 }}</span>
+                                        </td>
+                                        <td class="text-right py-3 text-muted">
+                                            ${{ details.2|floatformat:2 }}
+                                        </td>
+                                        <td class="text-right pr-4 py-3 font-weight-bold text-dark">
+                                            ${% widthratio details.0 1 details.2 %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-5">
+                                            <i class="fas fa-basket-shopping fa-2x mb-2 d-block opacity-50"></i>
+                                            No item details available for this receipt.
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light border-top py-3 d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Free standard domestic shipping applied.</span>
+                    <span class="small font-weight-bold text-dark">Subtotal: ${{ order.total_price }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Payment Summary & Destination -->
+        <div class="col-lg-4">
+            
+            <!-- Emerald Payment Summary Card -->
+            <div class="card card-zone-emerald shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="zone-icon zone-icon-emerald"><i class="fas fa-receipt"></i></span>
+                        <span class="badge badge-emerald-pill font-weight-bold">Payment Complete</span>
+                    </div>
+                    <small class="text-uppercase font-weight-bold tracking-wider text-emerald-muted d-block">
+                        Total Amount Charged
+                    </small>
+                    <div class="h2 font-weight-bold text-emerald-dark mb-3">
+                        ${{ order.total_price }}
+                    </div>
+                    <div class="p-2 rounded bg-white-50 border-emerald-subtle d-flex justify-content-between small text-emerald-muted">
+                        <span>Payment Status:</span>
+                        <span class="font-weight-bold text-dark"><i class="fas fa-circle-check text-success mr-1"></i> Confirmed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Destination Shipping Details Card -->
+            <div class="card card-zone-sky shadow-sm border-0">
+                <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center">
+                    <span class="zone-icon zone-icon-sky mr-2"><i class="fas fa-location-dot"></i></span>
+                    <h5 class="mb-0 font-weight-bold text-dark">Shipping Destination</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase font-weight-bold d-block mb-1">Recipient</small>
+                        <span class="font-weight-semibold text-dark">{{ order.name }}</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase font-weight-bold d-block mb-1">Contact Email</small>
+                        <span class="text-muted">{{ order.email }}</span>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div>
+                        <small class="text-muted text-uppercase font-weight-bold d-block mb-1">Delivery Address</small>
+                        <div class="p-3 bg-light rounded border small">
+                            <div class="font-weight-bold text-dark mb-1">{{ order.address }}</div>
+                            <div class="text-muted">{{ order.city }}, {{ order.state }} {{ order.zip_code }}</div>
                         </div>
-                        <span class="text-muted">${{ details.2 }}</span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item px-0 text-muted">No item details available.</li>
-                {% endfor %}
-            </ul>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

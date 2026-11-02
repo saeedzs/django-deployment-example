@@ -1,196 +1,293 @@
 {% extends "shop/base.html" %}
 
+{% block title %}Checkout — ShopSpace{% endblock %}
+
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        <!-- Order Summary Column -->
-        <div class="col-lg-5 order-lg-2 mb-4">
-            <div class="card shadow-sm border-0 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="font-weight-bold text-dark mb-0">Your Cart Summary</h4>
-                    <span class="badge badge-primary badge-pill px-2 py-2" id="cart-badge">0</span>
-                </div>
-                
-                <ul class="list-group list-group-flush mb-3" id="item-list">
-                    <!-- Populated dynamically via JS -->
-                </ul>
+<div class="checkout-page pb-5">
+    <!-- Breadcrumb & Header -->
+    <div class="mb-4">
+        <a href="{% url 'shop:index' %}" class="text-muted text-decoration-none small">
+            <i class="fas fa-arrow-left mr-1"></i> Back to shopping
+        </a>
+        <h2 class="section-title mt-2 mb-1">Secure Checkout</h2>
+        <p class="text-muted small mb-0">Please review your items and enter your shipping destination.</p>
+    </div>
 
-                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                    <h5 class="text-dark font-weight-bold mb-0">Total Amount</h5>
-                    <h4 class="text-success font-weight-bold mb-0" id="total-display">$0.00</h4>
-                </div>
-            </div>
+    <!-- Empty Cart Alert -->
+    <div id="empty-cart-warning" class="card border-0 shadow-sm p-5 text-center d-none">
+        <div class="py-4">
+            <i class="fas fa-basket-shopping fa-3x text-muted mb-3"></i>
+            <h4>Your cart is empty</h4>
+            <p class="text-muted">You have no items in your shopping bag to check out.</p>
+            <a href="{% url 'shop:index' %}" class="btn btn-primary rounded-pill px-4 mt-2">
+                Discover Products
+            </a>
         </div>
+    </div>
 
-        <!-- Shipping & Order Form Column -->
-        <div class="col-lg-7 order-lg-1">
-            <div class="card shadow-sm border-0 p-4">
-                <h4 class="mb-4 text-dark font-weight-bold">Shipping Address</h4>
-                <form method="POST" id="checkoutForm">
+    <!-- Checkout Main Content -->
+    <div id="checkout-content" class="row">
+        <!-- Left Column: Shipping & Details Form -->
+        <div class="col-lg-7 col-xl-8 mb-4">
+            <div class="card border-0 shadow-sm p-4 rounded-lg">
+                <div class="d-flex align-items-center mb-4 pb-2 border-bottom">
+                    <span class="step-badge mr-3">1</span>
+                    <div>
+                        <h5 class="mb-0 font-weight-bold">Shipping Information</h5>
+                        <small class="text-muted">Where should we deliver your order?</small>
+                    </div>
+                </div>
+
+                <form method="POST" id="checkout-form" action="{% url 'shop:checkout' %}">
                     {% csrf_token %}
 
-                    <!-- Hidden Fields -->
+                    <!-- Hidden fields required by OrderForm -->
                     {{ form.items }}
                     {{ form.total_price }}
 
-                    <!-- Form Fields -->
-                    <div class="form-group">
-                        <label class="text-muted font-weight-bold">Full Name</label>
-                        {{ form.name }}
-                        {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger border-0 shadow-sm mb-4 small">
+                            <strong>Please correct the errors below:</strong>
+                            <ul class="mb-0 mt-1 pl-3">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <!-- Full Name & Email -->
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label class="form-label font-weight-bold small text-muted">Full Name</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="form-label font-weight-bold small text-muted">Email Address</label>
+                            {{ form.email }}
+                        </div>
                     </div>
 
+                    <!-- Phone Number -->
                     <div class="form-group">
-                        <label class="text-muted font-weight-bold">Email Address</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label class="text-muted font-weight-bold">Phone Number</label>
+                        <label class="form-label font-weight-bold small text-muted">Phone Number</label>
                         {{ form.phone_num }}
-                        {% if form.phone_num.errors %}<div class="text-danger small mt-1">{{ form.phone_num.errors.0 }}</div>{% endif %}
                     </div>
 
+                    <!-- Street Address -->
                     <div class="form-group">
-                        <label class="text-muted font-weight-bold">Street Address</label>
+                        <label class="form-label font-weight-bold small text-muted">Street Address</label>
                         {{ form.address }}
-                        {% if form.address.errors %}<div class="text-danger small mt-1">{{ form.address.errors.0 }}</div>{% endif %}
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label class="text-muted font-weight-bold">City</label>
+                    <!-- City, State, ZIP -->
+                    <div class="form-row">
+                        <div class="form-group col-md-5">
+                            <label class="form-label font-weight-bold small text-muted">City</label>
                             {{ form.city }}
-                            {% if form.city.errors %}<div class="text-danger small mt-1">{{ form.city.errors.0 }}</div>{% endif %}
                         </div>
-                        <div class="col-md-3 form-group">
-                            <label class="text-muted font-weight-bold">State</label>
+                        <div class="form-group col-md-4">
+                            <label class="form-label font-weight-bold small text-muted">State / Province</label>
                             {{ form.state }}
-                            {% if form.state.errors %}<div class="text-danger small mt-1">{{ form.state.errors.0 }}</div>{% endif %}
                         </div>
-                        <div class="col-md-3 form-group">
-                            <label class="text-muted font-weight-bold">Zip</label>
+                        <div class="form-group col-md-3">
+                            <label class="form-label font-weight-bold small text-muted">Postal Code</label>
                             {{ form.zip_code }}
-                            {% if form.zip_code.errors %}<div class="text-danger small mt-1">{{ form.zip_code.errors.0 }}</div>{% endif %}
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-add-cart btn-block py-3 mt-4 font-weight-bold shadow-sm" id="placeOrderBtn">
-                        Place Order
+                    <!-- Security Banner -->
+                    <div class="p-3 bg-light rounded d-flex align-items-center mt-3 text-muted small">
+                        <i class="fas fa-lock text-primary mr-3 fa-lg"></i>
+                        <span>All orders are processed with end-to-end 256-bit encryption.</span>
+                    </div>
+                    <button type="submit" id="submit-order-btn" class="btn btn-checkout-primary btn-block py-3 mt-4 font-weight-bold rounded-pill shadow-sm">
+                        Complete Order & Proceed
                     </button>
+
                 </form>
+            </div>
+        </div>
+
+        <!-- Right Column: Interactive Order Summary Sidebar -->
+        <div class="col-lg-5 col-xl-4">
+            <div class="card border-0 shadow-sm p-4 rounded-lg sticky-top" style="top: 100px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <h5 class="mb-0 font-weight-bold">Order Summary</h5>
+                    <span class="badge badge-light border" id="summary-item-count">0 items</span>
+                </div>
+
+                <!-- Scrollable Item List Container -->
+                <div id="summary-items-list" class="checkout-items-list mb-3">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <!-- Price Calculations -->
+                <div class="border-top pt-3">
+                    <div class="d-flex justify-content-between text-muted small mb-2">
+                        <span>Subtotal</span>
+                        <span id="summary-subtotal" class="font-weight-bold text-dark">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small mb-2">
+                        <span>Standard Shipping</span>
+                        <span class="text-success font-weight-bold">Free</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small mb-3">
+                        <span>Estimated Tax</span>
+                        <span class="font-weight-bold text-dark">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-baseline pt-2 border-top">
+                        <span class="font-weight-bold">Total</span>
+                        <span id="summary-total" class="h4 font-weight-bold text-primary mb-0">$0.00</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript">
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const emptyCartBox = document.getElementById("empty-cart-warning");
+    const checkoutContent = document.getElementById("checkout-content");
+    const itemsListContainer = document.getElementById("summary-items-list");
+    const itemCountBadge = document.getElementById("summary-item-count");
+    const subtotalEl = document.getElementById("summary-subtotal");
+    const totalEl = document.getElementById("summary-total");
+
+    const hiddenItemsInput = document.getElementById("items");
+    const hiddenTotalInput = document.getElementById("total_price");
+
     function getCart() {
         return localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : {};
     }
 
     function saveCart(cart) {
         localStorage.setItem('cart', JSON.stringify(cart));
-        if (typeof updateCartCount === 'function') updateCartCount(cart);
-        if (typeof DisplayCart === 'function') DisplayCart(cart);
+        if (typeof updateCartBadge === 'function') {
+            updateCartBadge(cart);
+        }
+        if (typeof configureCartPopover === 'function') {
+            configureCartPopover(cart);
+        }
     }
 
-    function renderCheckout() {
-        var cart = getCart();
-        var total = 0;
-        var itemCount = 0;
-        var itemList = $('#item-list');
-        itemList.empty();
+    function renderCheckoutSummary() {
+        const cartData = getCart();
+        const keys = Object.keys(cartData);
 
-        if (Object.keys(cart).length === 0) {
-            itemList.append('<li class="list-group-item text-center text-muted py-4 border-0">Your cart is empty.</li>');
-            $('#total-display').text('$0.00');
-            $('#cart-badge').text('0');
-            $('#items').val('{}');
-            $('#total_price').val('0.00');
-            $('#placeOrderBtn').prop('disabled', true);
+        if (keys.length === 0) {
+            checkoutContent.classList.add("d-none");
+            emptyCartBox.classList.remove("d-none");
+            if (hiddenItemsInput) hiddenItemsInput.value = "";
+            if (hiddenTotalInput) hiddenTotalInput.value = "0.00";
             return;
         }
 
-        $('#placeOrderBtn').prop('disabled', false);
+        checkoutContent.classList.remove("d-none");
+        emptyCartBox.classList.add("d-none");
 
-        for (var itemKey in cart) {
-            var qty = cart[itemKey][0];
-            var name = cart[itemKey][1];
-            var price = parseFloat(cart[itemKey][2]);
-            var itemTotal = qty * price;
+        let subtotal = 0;
+        let totalItemsCount = 0;
+        let listHtml = "";
 
-            total += itemTotal;
-            itemCount += qty;
+        keys.forEach(function (key) {
+            const qty = cartData[key][0];
+            const name = cartData[key][1];
+            const price = parseFloat(cartData[key][2]) || 0;
+            const lineTotal = qty * price;
 
-            var itemHtml = `
-                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
-                    <div class="pr-2" style="max-width: 55%;">
-                        <span class="font-weight-bold text-dark d-block mb-1">${name}</span>
-                        <small class="text-muted">$${price.toFixed(2)} each</small>
+            subtotal += lineTotal;
+            totalItemsCount += qty;
+
+            listHtml += `
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom checkout-item-row" data-id="${key}">
+                    <div class="mr-2 flex-grow-1" style="min-width: 0;">
+                        <div class="font-weight-bold small text-truncate" title="${name}">${name}</div>
+                        <div class="text-muted small">$${price.toFixed(2)} each</div>
                     </div>
+                    
                     <div class="d-flex align-items-center">
-                        <div class="btn-group btn-group-sm mr-2" role="group">
-                            <button type="button" class="btn btn-outline-secondary btn-minus mr-1" data-id="${itemKey}">-</button>
-                            <button type="button" class="btn btn-light font-weight-bold text-dark px-1" disabled style="opacity: 1;">${qty}</button>
-                            <button type="button" class="btn btn-outline-secondary btn-plus" data-id="${itemKey}">+</button>
+                        <!-- Stepper Controls -->
+                        <div class="input-group input-group-sm checkout-qty-stepper mr-2">
+                            <div class="input-group-prepend">
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-0 btn-decrease" data-id="${key}">
+                                    <i class="fas fa-minus fa-xs"></i>
+                                </button>
+                            </div>
+                            <span class="input-group-text bg-white px-2 py-0 font-weight-bold small border-left-0 border-right-0">${qty}</span>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-0 btn-increase" data-id="${key}">
+                                    <i class="fas fa-plus fa-xs"></i>
+                                </button>
+                            </div>
                         </div>
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-remove" data-id="${itemKey}" title="Remove item">
-                            <i class="fas fa-trash-alt"></i>
+
+                        <!-- Item Total -->
+                        <div class="font-weight-bold small mr-2 text-nowrap" style="min-width: 48px; text-align: right;">
+                            $${lineTotal.toFixed(2)}
+                        </div>
+
+                        <!-- Delete Button -->
+                        <button type="button" class="btn btn-link text-danger p-0 ml-1 btn-delete" data-id="${key}" title="Remove item">
+                            <i class="fas fa-trash-can fa-sm"></i>
                         </button>
                     </div>
-                </li>
+                </div>
             `;
-            itemList.append(itemHtml);
-        }
+        });
 
-        $('#cart-badge').text(itemCount);
-        $('#total-display').text('$' + total.toFixed(2));
-        $('#items').val(JSON.stringify(cart));
-        $('#total_price').val(total.toFixed(2));
+        itemsListContainer.innerHTML = listHtml;
+        itemCountBadge.textContent = `${totalItemsCount} item${totalItemsCount > 1 ? 's' : ''}`;
+        subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+        totalEl.textContent = `$${subtotal.toFixed(2)}`;
+
+        // Sync serialized inputs for OrderForm submission
+        if (hiddenItemsInput) hiddenItemsInput.value = JSON.stringify(cartData);
+        if (hiddenTotalInput) hiddenTotalInput.value = subtotal.toFixed(2);
     }
 
-    // Plus quantity button
-    $(document).on('click', '.btn-plus', function() {
-        var id = $(this).data('id');
-        var cart = getCart();
-        if (cart[id]) {
-            cart[id][0] += 1;
-            saveCart(cart);
-            renderCheckout();
-        }
-    });
+    // Event Delegation: Increase, Decrease, and Remove
+    itemsListContainer.addEventListener("click", function (e) {
+        const targetBtn = e.target.closest("button");
+        if (!targetBtn) return;
 
-    // Minus quantity button
-    $(document).on('click', '.btn-minus', function() {
-        var id = $(this).data('id');
-        var cart = getCart();
-        if (cart[id]) {
-            cart[id][0] -= 1;
-            if (cart[id][0] <= 0) {
-                delete cart[id];
+        const itemId = targetBtn.dataset.id;
+        const cartData = getCart();
+
+        if (!cartData[itemId]) return;
+
+        if (targetBtn.classList.contains("btn-increase")) {
+            cartData[itemId][0] += 1;
+            saveCart(cartData);
+            renderCheckoutSummary();
+        } else if (targetBtn.classList.contains("btn-decrease")) {
+            if (cartData[itemId][0] > 1) {
+                cartData[itemId][0] -= 1;
+            } else {
+                delete cartData[itemId];
             }
-            saveCart(cart);
-            renderCheckout();
-        }
-    });
-
-    // Delete item button
-    $(document).on('click', '.btn-remove', function() {
-        var id = $(this).data('id');
-        var cart = getCart();
-        if (cart[id]) {
-            delete cart[id];
-            saveCart(cart);
-            renderCheckout();
+            saveCart(cartData);
+            renderCheckoutSummary();
+        } else if (targetBtn.classList.contains("btn-delete")) {
+            delete cartData[itemId];
+            saveCart(cartData);
+            renderCheckoutSummary();
         }
     });
 
     // Initial render on page load
-    $(document).ready(function() {
-        renderCheckout();
-    });
-</script>
+    renderCheckoutSummary();
 
+    // Clear cart upon successful submission
+    const form = document.getElementById("checkout-form");
+    if (form) {
+        form.addEventListener("submit", function () {
+            localStorage.removeItem('cart');
+        });
+    }
+});
+</script>
 {% endblock %}
