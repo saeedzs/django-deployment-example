@@ -1024,3 +1024,100 @@ body.bg-canvas {
 .btn-checkout-primary:active {
     transform: scale(0.96) !important;
 }
+
+/* =================================================================
+   WISHLIST BUTTONS, BADGES & TOAST NOTIFICATIONS
+   ================================================================= */
+
+/* Floating Heart Icon on Cards */
+.btn-wishlist-toggle {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-subtle);
+    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.18s ease;
+}
+
+.btn-wishlist-toggle:hover {
+    transform: scale(1.15);
+    background-color: #FFFFFF;
+    color: var(--brand-sale);
+}
+
+.btn-wishlist-toggle:active {
+    transform: scale(0.9);
+}
+
+.btn-wishlist-toggle.active {
+    background-color: #FFF1F2;
+    border-color: #FECDD3;
+}
+
+/* Navbar Wishlist Button & Badge */
+.btn-wishlist-nav {
+    position: relative;
+    background: #FFFFFF;
+    color: var(--color-heading);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-wishlist-nav:hover {
+    background: #FFF1F2;
+    border-color: #FECDD3;
+    color: var(--brand-sale);
+    transform: translateY(-1px);
+}
+
+.wishlist-pill-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #E11D48;
+    color: #FFFFFF;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 2px 6px;
+    border: 2px solid #FFFFFF;
+}
+
+/* Floating Toast Notification */
+.shopspace-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1E293B;
+    color: #FFFFFF;
+    padding: 12px 20px;
+    border-radius: var(--radius-pill);
+    z-index: 2000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.shopspace-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}

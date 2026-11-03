@@ -51,6 +51,18 @@
                 {% endif %}
             </div>
 
+            <!-- Floating Wishlist Toggle Button -->
+            <button 
+                type="button" 
+                class="btn-wishlist-toggle {% if product.id in user_wishlist_ids %}active{% endif %}" 
+                data-product-id="{{ product.id }}"
+                data-toggle-url="{% url 'shop:toggle_wishlist' product.id %}"
+                title="Save for later"
+                aria-label="Save for later"
+            >
+                <i class="{% if product.id in user_wishlist_ids %}fas text-danger{% else %}far{% endif %} fa-heart"></i>
+            </button>
+
             <!-- Product Media Frame -->
             <a href="{% url 'shop:product_detail' product.id %}" class="product-media-link">
                 <div class="product-image-frame">

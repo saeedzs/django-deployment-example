@@ -1,0 +1,112 @@
+{% extends "shop/base.html" %}
+{% block title %}My Saved Items — ShopSpace{% endblock %}
+
+{% block content %}
+<div class="wishlist-page pb-5">
+    
+    <!-- Top Action & Navigation Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+        <div>
+            <a href="{% url 'shop:index' %}" class="text-muted text-decoration-none small">
+                <i class="fas fa-arrow-left mr-1"></i> Back to Storefront
+            </a>
+            <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+                <h2 class="h3 font-weight-bold mb-0 text-dark">My Saved Items</h2>
+                <span class="badge badge-light border px-3 py-2 text-muted">
+                    <i class="fas fa-heart text-danger mr-1"></i> {{ wishlist_items.count }} item{{ wishlist_items.count|pluralize }}
+                </span>
+            </div>
+            <p class="text-muted small mb-0 mt-1">Items saved to purchase later or monitor for price drops.</p>
+        </div>
+
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'shop:index' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fas fa-bag-shopping mr-1"></i> Continue Shopping
+            </a>
+        </div>
+    </div>
+
+    {% if wishlist_items %}
+    <div class="row g-4">
+        {% for item in wishlist_items %}
+        <div class="col-xl-3 col-lg-4 col-sm-6 mb-4" id="wishlist-card-{{ item.product.id }}">
+            <div class="card h-100 product-card border-0">
+                <!-- Badges -->
+                <div class="product-badge-group">
+                    <span class="badge-category">{{ item.product.category|title }}</span>
+                </div>
+
+                <!-- Delete / Remove Button -->
+                <button 
+                    type="button" 
+                    class="btn-wishlist-toggle active" 
+                    data-toggle-url="{% url 'shop:toggle_wishlist' item.product.id %}"
+                    data-card-id="wishlist-card-{{ item.product.id }}"
+                    title="Remove from saved items"
+                >
+                    <i class="fas fa-heart text-danger"></i>
+                </button>
+
+                <!-- Media Frame -->
+                <a href="{% url 'shop:product_detail' item.product.id %}" class="product-media-link">
+                    <div class="product-image-frame">
+                        <img src="{{ item.product.image.url }}" class="product-img" alt="{{ item.product.title }}" loading="lazy">
+                    </div>
+                </a>
+
+                <!-- Card Body -->
+                <div class="card-body d-flex flex-column p-3">
+                    <a href="{% url 'shop:product_detail' item.product.id %}" class="text-decoration-none">
+                        <h5 class="product-heading text-truncate mb-1" title="{{ item.product.title }}">
+                            {{ item.product.title }}
+                        </h5>
+                    </a>
+
+                    <p class="product-excerpt text-muted mb-3 flex-grow-1">
+                        {{ item.product.description|truncatewords:14 }}
+                    </p>
+
+                    <div class="product-pricing d-flex align-items-baseline mb-3">
+                        <span class="current-price">${{ item.product.price|floatformat:2 }}</span>
+                        {% if item.product.dis_price and item.product.dis_price > item.product.price %}
+                            <span class="original-price ml-2">${{ item.product.dis_price|floatformat:2 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="product-action-row d-flex align-items-center gap-2 mt-auto">
+                        <button 
+                            id="{{ item.product.id }}" 
+                            data-name="{{ item.product.title }}" 
+                            data-price="{{ item.product.price }}" 
+                            class="btn btn-atc atc flex-grow-1"
+                            type="button"
+                        >
+                            <i class="fas fa-cart-plus mr-1"></i> Move to Bag
+                        </button>
+                        <a href="{% url 'shop:product_detail' item.product.id %}" class="btn btn-inspect" title="Quick View">
+                            <i class="fas fa-arrow-up-right-from-square"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card card-zone-items border-0 shadow-sm p-5 text-center my-4">
+        <div class="py-5">
+            <div class="zone-icon zone-icon-amber mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.6rem;">
+                <i class="far fa-heart"></i>
+            </div>
+            <h4 class="font-weight-bold text-dark mb-2">Your wishlist is currently empty</h4>
+            <p class="text-muted small mb-4">Click the heart icon on any product in our catalog to save it for later.</p>
+            <a href="{% url 'shop:index' %}" class="btn btn-atc rounded-pill px-4 py-2 font-weight-bold text-decoration-none">
+                Explore Catalog
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

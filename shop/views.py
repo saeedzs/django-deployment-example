@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import MyProduct,Order,ContactMessage
+from .models import MyProduct,Order,ContactMessage,Wishlist
 from django.core.paginator import Paginator
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
@@ -18,6 +18,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from useraccounts.forms import PostPurchaseRegisterForm
 from django.db import models
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
 User = get_user_model()
 
@@ -37,8 +39,17 @@ def index(request):
     page_number = request.GET.get("page")
     products_obj = paginator.get_page(page_number)
     
-    return render(request, "shop/index.html", {"products_obj":products_obj})
-
+    # retrieve wishlist IDs for logged-in user to highlight saved hearts
+    user_wishlist_ids = set()
+    if request.user.is_authenticated:
+        user_wishlist_ids = set(
+            Wishlist.objects.filter(user=request.user).values_list('product_id', flat=True)
+        )
+    
+    return render(request, "shop/index.html", {
+        "products_obj": products_obj,
+        "user_wishlist_ids": user_wishlist_ids
+    })
 
 def product_detail(request, id):
     product = get_object_or_404(MyProduct, id=id)
@@ -283,6 +294,37 @@ def parse_order_items(raw_items):
             return ast.literal_eval(raw_items)
         except (ValueError, SyntaxError):
             return {}
+        
+@login_required
+def wishlist_view(request):
+    """Renders the saved items collection for the logged-in user."""
+    wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')
+    return render(request, "shop/wishlist.html", {"wishlist_items": wishlist_items})
+
+@login_required
+def toggle_wishlist(request, product_id):
+    """AJAX endpoint to toggle a product into or out of the user's wishlist."""
+    if request.method == "POST":
+        product = get_object_or_404(MyProduct, id=product_id)
+        wishlist_item = Wishlist.objects.filter(user=request.user, product=product).first()
+
+        if wishlist_item:
+            wishlist_item.delete()
+            saved = False
+            message = f"{product.title} removed from saved items."
+        else:
+            Wishlist.objects.create(user=request.user, product=product)
+            saved = True
+            message = f"{product.title} added to saved items."
+
+        total_count = Wishlist.objects.filter(user=request.user).count()
+        return JsonResponse({
+            "saved": saved,
+            "message": message,
+            "total_count": total_count
+        })
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
 # # Public API: List all products or create a new product (Admin/Staff only)
 # class ProductListCreateAPIView(ListCreateAPIView):

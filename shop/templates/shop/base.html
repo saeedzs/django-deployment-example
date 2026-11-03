@@ -96,6 +96,16 @@
                             {% endif %}
                         </div>
 
+                        <!-- Wishlist Navigation Button -->
+                        <a href="{% url 'shop:wishlist' %}" class="btn btn-wishlist-nav mr-2" title="View Wishlist">
+                            <i class="far fa-heart"></i>
+                            {% if user.is_authenticated and user.wishlist_items.count > 0 %}
+                                <span class="wishlist-pill-badge" id="wishlist-counter">{{ user.wishlist_items.count }}</span>
+                            {% else %}
+                                <span class="wishlist-pill-badge d-none" id="wishlist-counter">0</span>
+                            {% endif %}
+                        </a>
+
                         <!-- Modern Cart Trigger -->
                         <button id="cart" type="button" class="btn btn-cart-modern" data-toggle="popover" data-placement="bottom">
                             <i class="fas fa-bag-shopping"></i>
@@ -259,5 +269,75 @@
             });
         });
     </script>
+
+
+<!-- Floating Notification Toast -->
+<div id="shopspace-toast" class="shopspace-toast shadow-lg border-0 d-none">
+    <div class="toast-content d-flex align-items-center">
+        <span class="toast-icon mr-2"><i class="fas fa-heart text-danger"></i></span>
+        <span class="toast-message small font-weight-bold"></span>
+    </div>
+</div>
+
+<script>
+// Wishlist AJAX Toggle Handler
+$(document).on('click', '.btn-wishlist-toggle', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var $btn = $(this);
+    var url = $btn.data('toggle-url');
+    var $icon = $btn.find('i');
+
+    {% if not user.is_authenticated %}
+        window.location.href = "{% url 'useraccounts:login' %}?next={{ request.path }}";
+        return;
+    {% endif %}
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.saved) {
+                $btn.addClass('active');
+                $icon.removeClass('far text-dark').addClass('fas text-danger');
+            } else {
+                $btn.removeClass('active');
+                $icon.removeClass('fas text-danger').addClass('far');
+            }
+
+            // Update badge in navbar
+            var $badge = $('#wishlist-counter');
+            if (response.total_count > 0) {
+                $badge.text(response.total_count).removeClass('d-none');
+            } else {
+                $badge.addClass('d-none');
+            }
+
+            // Trigger floating toast
+            showFloatingToast(response.message, response.saved);
+        },
+        error: function() {
+            showFloatingToast("Unable to update wishlist. Please try again.", false);
+        }
+    });
+});
+
+function showFloatingToast(message, isSuccess) {
+    var $toast = $('#shopspace-toast');
+    $toast.find('.toast-message').text(message);
+    $toast.find('.toast-icon i').attr('class', isSuccess ? 'fas fa-heart text-danger' : 'fas fa-circle-info text-primary');
+    
+    $toast.removeClass('d-none').addClass('show');
+    clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(function() {
+        $toast.removeClass('show');
+        setTimeout(function() { $toast.addClass('d-none'); }, 300);
+    }, 2400);
+}
+</script>
 </body>
 </html>

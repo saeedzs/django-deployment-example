@@ -26,4 +26,6 @@ urlpatterns = [
     path('api/products/', views.PublicProductListAPIView.as_view(), name='api_product_list'),
     path('api/products/<int:id>/', views.PublicProductDetailAPIView.as_view(), name='api_product_detail'),
     path('api/orders/create/', views.OrderCreateAPIView.as_view(), name='api_order_create'),  # New API route for creating orders
+    path("wishlist/", views.wishlist_view, name="wishlist"),
+    path("wishlist/toggle/<int:product_id>/", views.toggle_wishlist, name="toggle_wishlist"),
 ]
