@@ -13,6 +13,11 @@ class MyProduct(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='products/', default="default.png")
 
+    # New High-Impact Visual Fields
+    stock = models.PositiveIntegerField(default=15)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, default=4.8)
+    review_count = models.PositiveIntegerField(default=12)
+    
     def __str__(self):
         return self.title
     
